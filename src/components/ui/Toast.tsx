@@ -63,7 +63,7 @@ export function Toast({
       role="alert"
       aria-live="assertive"
       className={cn(
-        "pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-lg border-l-4 bg-white p-4 shadow-lg",
+        "pointer-events-auto fixed bottom-4 right-4 z-50 flex w-full max-w-sm items-center gap-3 rounded-lg border-l-4 bg-white p-4 shadow-lg",
         variantStyles[type],
       )}
     >

@@ -3,18 +3,19 @@ import { Plus } from "lucide-react";
 import AdminList from "@/features/admins/components/AdminList";
 import CreateAdminModal from "@/features/admins/components/CreateAdminModal";
 import EditAdminModal from "@/features/admins/components/EditAdminModal";
+import DeactivateConfirmModal from "@/features/admins/components/DeactivateConfirmModal";
 import { Button } from "@/components/ui/Button";
 import type { AdminAccount } from "@/types/api";
 
 export default function AdminManagementPage() {
-  // ── Create modal state ──────────────────────────────────────────
   const [createOpen, setCreateOpen] = useState(false);
 
-  // ── Edit modal state ────────────────────────────────────────────
   const [editOpen, setEditOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<AdminAccount | null>(null);
 
-  /* ---- Callbacks ---- */
+  const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [deactivatingAdmin, setDeactivatingAdmin] =
+    useState<AdminAccount | null>(null);
 
   function handleEdit(admin: AdminAccount) {
     setEditingAdmin(admin);
@@ -26,9 +27,18 @@ export default function AdminManagementPage() {
     setEditingAdmin(null);
   }
 
+  function handleDeactivateRequest(admin: AdminAccount) {
+    setDeactivatingAdmin(admin);
+    setDeactivateOpen(true);
+  }
+
+  function handleDeactivateClose() {
+    setDeactivateOpen(false);
+    setDeactivatingAdmin(null);
+  }
+
   return (
     <div>
-      {/* ─── Page header ────────────────────────────────────────── */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Management</h1>
@@ -42,10 +52,8 @@ export default function AdminManagementPage() {
         </Button>
       </div>
 
-      {/* ─── Admin list ─────────────────────────────────────────── */}
-      <AdminList onEdit={handleEdit} />
+      <AdminList onEdit={handleEdit} onDeactivate={handleDeactivateRequest} />
 
-      {/* ─── Modals ─────────────────────────────────────────────── */}
       <CreateAdminModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
@@ -56,6 +64,15 @@ export default function AdminManagementPage() {
           open={editOpen}
           admin={editingAdmin}
           onClose={handleEditClose}
+          onDeactivate={handleDeactivateRequest}
+        />
+      )}
+
+      {deactivatingAdmin && (
+        <DeactivateConfirmModal
+          open={deactivateOpen}
+          admin={deactivatingAdmin}
+          onClose={handleDeactivateClose}
         />
       )}
     </div>

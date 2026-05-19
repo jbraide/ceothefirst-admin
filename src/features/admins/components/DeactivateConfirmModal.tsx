@@ -22,6 +22,7 @@ export default function DeactivateConfirmModal({
 
   const mutation = useMutation({
     mutationFn: (id: string) => deactivateAdmin(id),
+    onError: (err) => { console.error("Failed to deactivate admin:", err); },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.lists() });
       queryClient.invalidateQueries({

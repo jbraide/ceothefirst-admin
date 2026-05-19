@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 import { getAdmins, adminKeys, type GetAdminsParams } from "../api/getAdmins";
 import { Button } from "@/components/ui/Button";
@@ -40,9 +40,10 @@ function formatDate(dateString: string): string {
 
 export interface AdminListProps {
   onEdit: (admin: AdminAccount) => void;
+  onDeactivate?: (admin: AdminAccount) => void;
 }
 
-export default function AdminList({ onEdit }: AdminListProps) {
+export default function AdminList({ onEdit, onDeactivate }: AdminListProps) {
   const [page, setPage] = useState(1);
 
   const queryParams: GetAdminsParams = {
@@ -73,17 +74,15 @@ export default function AdminList({ onEdit }: AdminListProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-16">
             <Spinner className="h-8 w-8" />
           </div>
         )}
 
-        {/* Error State */}
         {isError && !isLoading && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-destructive font-medium">
+            <p className="font-medium text-destructive">
               Failed to load admin accounts
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -92,7 +91,6 @@ export default function AdminList({ onEdit }: AdminListProps) {
           </div>
         )}
 
-        {/* Empty State */}
         {!isLoading && !isError && admins.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <p className="text-lg font-medium text-muted-foreground">
@@ -104,7 +102,6 @@ export default function AdminList({ onEdit }: AdminListProps) {
           </div>
         )}
 
-        {/* Table */}
         {!isLoading && !isError && admins.length > 0 && (
           <>
             <div className="overflow-x-auto">
@@ -147,14 +144,26 @@ export default function AdminList({ onEdit }: AdminListProps) {
                         {formatDate(admin.createdAt)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEdit(admin)}
-                          aria-label={`Edit ${admin.name}`}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onEdit(admin)}
+                            aria-label={`Edit ${admin.name}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          {onDeactivate && admin.isActive !== false && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onDeactivate(admin)}
+                              aria-label={`Deactivate ${admin.name}`}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -162,7 +171,6 @@ export default function AdminList({ onEdit }: AdminListProps) {
               </Table>
             </div>
 
-            {/* Pagination */}
             {meta && meta.totalPages > 1 && (
               <div className="mt-6 flex items-center justify-between border-t pt-4">
                 <p className="text-sm text-muted-foreground">

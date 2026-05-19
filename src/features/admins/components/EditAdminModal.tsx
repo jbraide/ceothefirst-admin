@@ -20,12 +20,14 @@ export interface EditAdminModalProps {
   admin: AdminAccount;
   open: boolean;
   onClose: () => void;
+  onDeactivate?: (admin: AdminAccount) => void;
 }
 
 export default function EditAdminModal({
   admin,
   open,
   onClose,
+  onDeactivate,
 }: EditAdminModalProps) {
   const queryClient = useQueryClient();
 
@@ -38,7 +40,6 @@ export default function EditAdminModal({
     type: ToastType;
   } | null>(null);
 
-  // Reset form when admin prop changes or modal opens
   useEffect(() => {
     if (open) {
       setName(admin.name);
@@ -61,7 +62,8 @@ export default function EditAdminModal({
       });
       onClose();
     },
-    onError: () => {
+    onError: (err) => {
+      console.error("Failed to update admin:", err);
       setToast({
         message: "Failed to update admin account. Please try again.",
         type: "error",
@@ -72,13 +74,19 @@ export default function EditAdminModal({
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    const body: UpdateAdminRequest = {
-      name: name !== admin.name ? name : undefined,
-      role: role !== admin.role ? role : undefined,
-      isActive: isActive !== (admin.isActive !== false) ? isActive : undefined,
-    };
+    const body: UpdateAdminRequest = {};
+    if (name !== admin.name) body.name = name;
+    if (role !== admin.role) body.role = role;
+    if (isActive !== (admin.isActive !== false)) body.isActive = isActive;
 
     mutation.mutate({ id: admin.id, body });
+  }
+
+  function handleDeactivateClick() {
+    onClose();
+    if (onDeactivate) {
+      onDeactivate(admin);
+    }
   }
 
   return (
@@ -105,7 +113,7 @@ export default function EditAdminModal({
             onChange={(e) => setRole(e.target.value as AdminRole)}
           />
 
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className="flex cursor-pointer items-center gap-3">
             <input
               type="checkbox"
               checked={isActive}
@@ -117,18 +125,29 @@ export default function EditAdminModal({
             </span>
           </label>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={mutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" loading={mutation.isPending}>
-              Save Changes
-            </Button>
+          <div className="flex items-center justify-between pt-2">
+            {onDeactivate && admin.isActive !== false && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleDeactivateClick}
+              >
+                Deactivate
+              </Button>
+            )}
+            <div className="ml-auto flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={mutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" loading={mutation.isPending}>
+                Save Changes
+              </Button>
+            </div>
           </div>
         </form>
       </Modal>

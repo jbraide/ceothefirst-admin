@@ -47,7 +47,7 @@ export default function CreateAdminModal({
       });
       handleClose();
     },
-    onError: () => {
+    onError: (err) => { console.error("Failed to create admin:", err);
       setToast({
         message: "Failed to create admin account. Please try again.",
         type: "error",
