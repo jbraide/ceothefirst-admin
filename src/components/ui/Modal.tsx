@@ -52,7 +52,7 @@ export function Modal({
   /* ---- Backdrop click handler ---- */
   const backdropRef = useClickOutside<HTMLDivElement>(onClose);
 
-  if (!open) return null;
+  console.log("Modal render, open:", open); if (!open) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
