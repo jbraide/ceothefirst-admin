@@ -3,15 +3,7 @@ import { Building2, ArrowLeftRight, Banknote, Users } from "lucide-react";
 import { getOverview } from "../api/getOverview";
 import { Card, CardContent } from "@/components/ui/Card";
 import { cn } from "@/utils/cn";
-
-// ─── Currency Formatter ────────────────────────────────────────────────
-
-const naira = new Intl.NumberFormat("en-NG", {
-  style: "currency",
-  currency: "NGN",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+import { naira } from "@/features/analytics/utils";
 
 // ─── Stat Card Config ──────────────────────────────────────────────────
 

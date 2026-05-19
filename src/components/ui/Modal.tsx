@@ -1,26 +1,22 @@
-import {
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from 'react'
-import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
-import { cn } from '@/utils/cn'
-import { useClickOutside } from '@/hooks/useClickOutside'
+import { useEffect, useCallback, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { X } from "lucide-react";
+import { cn } from "@/utils/cn";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 export interface ModalProps {
   /** Whether the modal is currently visible */
-  open: boolean
+  open: boolean;
   /** Called when the modal should close */
-  onClose: () => void
+  onClose: () => void;
   /** Title rendered in the modal header */
-  title?: string
+  title?: string;
   /** Accessible description (visually hidden) */
-  description?: string
+  description?: string;
   /** Modal body content */
-  children?: ReactNode
+  children?: ReactNode;
   /** Additional class names applied to the inner panel */
-  className?: string
+  className?: string;
 }
 
 export function Modal({
@@ -34,29 +30,29 @@ export function Modal({
   /* ---- Escape key handler ---- */
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose()
+      if (event.key === "Escape") {
+        onClose();
       }
     },
     [onClose],
-  )
+  );
 
   useEffect(() => {
     if (open) {
-      document.addEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = 'hidden'
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = ''
-    }
-  }, [open, handleKeyDown])
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [open, handleKeyDown]);
 
   /* ---- Backdrop click handler ---- */
-  const backdropRef = useClickOutside<HTMLDivElement>(onClose)
+  const backdropRef = useClickOutside<HTMLDivElement>(onClose);
 
-  if (!open) return null
+  if (!open) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -71,10 +67,10 @@ export function Modal({
         ref={backdropRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={title ? 'modal-title' : undefined}
-        aria-describedby={description ? 'modal-description' : undefined}
+        aria-labelledby={title ? "modal-title" : undefined}
+        aria-describedby={description ? "modal-description" : undefined}
         className={cn(
-          'relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col rounded-lg bg-white shadow-xl',
+          "relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col rounded-lg bg-white shadow-xl",
           className,
         )}
       >
@@ -91,10 +87,7 @@ export function Modal({
                 </h2>
               )}
               {description && (
-                <p
-                  id="modal-description"
-                  className="text-sm text-primary/60"
-                >
+                <p id="modal-description" className="text-sm text-primary/60">
                   {description}
                 </p>
               )}
@@ -116,5 +109,5 @@ export function Modal({
       </div>
     </div>,
     document.body,
-  )
+  );
 }

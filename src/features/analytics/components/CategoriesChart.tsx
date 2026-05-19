@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import type { Payload } from "recharts/types/component/DefaultLegendContent";
 import {
   PieChart,
   Pie,
@@ -44,27 +45,29 @@ function CategoryTooltip({
 
 // ─── Custom Legend ─────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderLegend(props: { payload?: any[] }) {
+function renderLegend(props: { payload?: Payload[] }) {
   const { payload } = props;
   if (!payload) return null;
 
   return (
     <ul className="mt-4 flex flex-wrap justify-center gap-3 text-xs">
-      {payload.map((entry) => (
-        <li
-          key={entry.payload?.name ?? entry.value}
-          className="flex items-center gap-1.5"
-        >
-          <span
-            className="inline-block h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: entry.payload?.fill ?? entry.color }}
-          />
-          <span className="text-gray-600">
-            {entry.payload?.name ?? entry.value}
-          </span>
-        </li>
-      ))}
+      {payload.map((entry) => {
+        const datum = entry.payload as unknown as PieDatum | undefined;
+        return (
+          <li
+            key={datum?.name ?? String(entry.value)}
+            className="flex items-center gap-1.5"
+          >
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: datum?.fill ?? entry.color }}
+            />
+            <span className="text-gray-600">
+              {datum?.name ?? String(entry.value)}
+            </span>
+          </li>
+        );
+      })}
     </ul>
   );
 }

@@ -53,6 +53,7 @@ export default function PendingVerificationsList() {
   } = useQuery({
     queryKey: verificationKeys.pending(),
     queryFn: getPendingVerifications,
+    staleTime: 30_000,
   });
 
   const verifyMutation = useMutation({

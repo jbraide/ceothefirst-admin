@@ -13,13 +13,7 @@ import { getAverageVolume } from "@/features/analytics/api/getAverageVolume";
 import { getPlatformDebt } from "@/features/analytics/api/getPlatformDebt";
 
 import { Card, CardContent } from "@/components/ui/Card";
-
-const naira = new Intl.NumberFormat("en-NG", {
-  style: "currency",
-  currency: "NGN",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+import { naira } from "@/features/analytics/utils";
 
 export default function DashboardPage() {
   return (

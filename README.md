@@ -1,73 +1,104 @@
-# React + TypeScript + Vite
+# NairaFlow Admin Interface
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Admin dashboard for the NairaFlow platform — manage businesses, review KYC verifications, monitor analytics, and send notifications.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Node.js** >= 18
+- **npm** >= 9
 
-## React Compiler
+## Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# Install dependencies
+npm install
 
-## Expanding the ESLint configuration
+# Set up environment
+cp .env.example .env
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Start dev server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The dev server runs at `http://localhost:5173`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Environment Variables
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_API_BASE_URL` | `https://api.ceothefirst.com/api/v1` | Backend API base URL |
+
+## Available Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | TypeScript check + production build |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run format` | Run Prettier |
+| `npm test` | Run Vitest tests |
+| `npm run test:ui` | Run Vitest with UI |
+
+## Architecture
+
 ```
+src/
+├── components/       # Shared UI (Button, Card, Modal…) & layout (Sidebar, DashboardLayout)
+├── features/         # Self-contained feature modules
+│   ├── auth/         # Login, ProtectedRoute, auth store
+│   ├── dashboard/    # Platform overview stats
+│   ├── analytics/    # Revenue, signups, verification funnel, comparisons
+│   ├── businesses/   # Business list, detail, suspend/activate
+│   ├── verifications/# KYC pending list, approve/reject
+│   ├── search/       # Global cross-entity search
+│   ├── audit/        # Admin action log
+│   └── notifications/# Broadcast + targeted push notifications
+├── hooks/            # Shared custom hooks (useDebounce, useLocalStorage…)
+├── lib/              # API client (Axios + interceptors)
+├── pages/            # Route-level page components
+├── store/            # Zustand stores (auth)
+├── styles/           # Tailwind global styles
+├── types/            # TypeScript API types
+└── utils/            # Pure utilities (cn(), formatters…)
+```
+
+### Key Dependencies
+
+| Library | Purpose |
+|---|---|
+| React 19 + Vite | Framework & build tool |
+| TypeScript | Type safety |
+| Tailwind CSS | Utility-first styling |
+| TanStack Query | Server state & caching |
+| Zustand | Client state (auth) |
+| React Router v6 | Routing |
+| Recharts | Analytics charts |
+| Axios | HTTP client |
+| Lucide React | Icons |
+| clsx + tailwind-merge | Class merging |
+
+### Feature Module Pattern
+
+Each feature under `src/features/[name]/` is self-contained:
+- `api/` — API call functions (one per endpoint)
+- `components/` — Feature-specific React components
+- `types.ts` — Feature-local types (or shared via `src/types/api.ts`)
+
+Cross-feature imports are avoided. Shared logic lives in `src/hooks/`, `src/lib/`, `src/utils/`.
+
+## Deployment
+
+```bash
+npm run build
+# Deploy the dist/ folder to any static host (Vercel, Netlify, S3, etc.)
+```
+
+Set `VITE_API_BASE_URL` to the production API URL in your deployment environment.
+
+## Security
+
+- Admin JWT tokens are stored in `localStorage` under namespaced keys (`nf_admin_*`).
+- This is vulnerable to XSS. For production, use HttpOnly cookies if the API supports them, and enforce a strict Content Security Policy (no `unsafe-inline`).
+- Tokens are automatically attached to every API request via an Axios interceptor.
+- On 401 responses, tokens are cleared and the user is redirected to `/login`.

@@ -37,10 +37,7 @@ const AUTH_TOKEN_KEY = "nf_admin_token";
 const AUTH_REFRESH_KEY = "nf_admin_refresh";
 const AUTH_USER_KEY = "nf_admin_user";
 
-function loadFromStorage(): Pick<
-  AuthState,
-  "token" | "refreshToken" | "user"
-> {
+function loadFromStorage(): Pick<AuthState, "token" | "refreshToken" | "user"> {
   if (typeof window === "undefined") {
     return { token: null, refreshToken: null, user: null };
   }

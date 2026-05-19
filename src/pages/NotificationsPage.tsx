@@ -1,4 +1,4 @@
-import NotificationForm from '@/features/notifications/components/NotificationForm';
+import NotificationForm from "@/features/notifications/components/NotificationForm";
 
 export default function NotificationsPage() {
   return (

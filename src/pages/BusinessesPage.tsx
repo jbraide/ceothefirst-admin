@@ -1,4 +1,4 @@
-import BusinessList from '@/features/businesses/components/BusinessList';
+import BusinessList from "@/features/businesses/components/BusinessList";
 
 export default function BusinessesPage() {
   return (

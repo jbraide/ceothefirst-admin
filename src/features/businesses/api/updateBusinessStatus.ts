@@ -1,5 +1,5 @@
-import apiClient from '@/lib/apiClient'
-import type { BusinessDetail, UpdateBusinessStatusRequest } from '@/types/api'
+import apiClient from "@/lib/apiClient";
+import type { BusinessDetail, UpdateBusinessStatusRequest } from "@/types/api";
 
 export async function updateBusinessStatus(
   id: string,
@@ -8,6 +8,6 @@ export async function updateBusinessStatus(
   const { data } = await apiClient.patch<BusinessDetail>(
     `/admin/businesses/${id}/status`,
     body,
-  )
-  return data
+  );
+  return data;
 }

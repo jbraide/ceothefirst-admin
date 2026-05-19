@@ -3,15 +3,7 @@ import { Trophy } from "lucide-react";
 import { getTopBusinesses } from "../api/getTopBusinesses";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
-
-// ─── Currency Formatter ────────────────────────────────────────────────
-
-const naira = new Intl.NumberFormat("en-NG", {
-  style: "currency",
-  currency: "NGN",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
+import { naira } from "@/features/analytics/utils";
 
 // ─── Rank Badge ────────────────────────────────────────────────────────
 

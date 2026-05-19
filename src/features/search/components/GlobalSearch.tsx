@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SearchIcon, XCircleIcon } from "lucide-react";
 
@@ -17,16 +17,7 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/utils/cn";
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
+import { useDebounce } from "@/hooks/useDebounce";
 
 function SectionLabel({ label, count }: { label: string; count: number }) {
   return (

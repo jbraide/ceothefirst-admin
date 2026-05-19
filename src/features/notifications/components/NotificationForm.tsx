@@ -19,21 +19,9 @@ import {
 } from "@/components/ui/Card";
 import { Toast } from "@/components/ui/Toast";
 import { cn } from "@/utils/cn";
+import { useToast } from "@/hooks/useToast";
 
 type Tab = "broadcast" | "targeted";
-
-function useToast() {
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-  };
-
-  return { toast, showToast, clearToast: () => setToast(null) };
-}
 
 export default function NotificationForm() {
   const [tab, setTab] = useState<Tab>("broadcast");

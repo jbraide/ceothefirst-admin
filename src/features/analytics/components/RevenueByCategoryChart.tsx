@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -9,23 +9,25 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-} from 'recharts'
-import { getRevenueByCategory } from '../api/getRevenueByCategory'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Spinner } from '@/components/ui/Spinner'
-import { naira, CHART_COLORS } from '../utils'
-import RangeSelector from './RangeSelector'
-import type { AnalyticsRange } from '@/types/api'
+} from "recharts";
+import { getRevenueByCategory } from "../api/getRevenueByCategory";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Spinner } from "@/components/ui/Spinner";
+import { naira, CHART_COLORS } from "../utils";
+import RangeSelector from "./RangeSelector";
+import type { AnalyticsRange } from "@/types/api";
 
 function CategoryTooltip({
   active,
   payload,
 }: {
-  active?: boolean
-  payload?: { payload: { category: string; total: number; percentage: number } }[]
+  active?: boolean;
+  payload?: {
+    payload: { category: string; total: number; percentage: number };
+  }[];
 }) {
-  if (!active || !payload?.length) return null
-  const d = payload[0].payload
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-lg">
@@ -34,17 +36,17 @@ function CategoryTooltip({
         {naira.format(d.total)} &middot; {d.percentage.toFixed(1)}%
       </p>
     </div>
-  )
+  );
 }
 
 export default function RevenueByCategoryChart() {
-  const [range, setRange] = useState<AnalyticsRange>('30d')
+  const [range, setRange] = useState<AnalyticsRange>("30d");
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['revenue-by-category', range],
+    queryKey: ["revenue-by-category", range],
     queryFn: () => getRevenueByCategory({ range }),
     staleTime: 60_000,
-  })
+  });
 
   if (isLoading) {
     return (
@@ -57,7 +59,7 @@ export default function RevenueByCategoryChart() {
           <Spinner size={32} />
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (isError || !data) {
@@ -73,7 +75,7 @@ export default function RevenueByCategoryChart() {
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (data.length === 0) {
@@ -89,10 +91,10 @@ export default function RevenueByCategoryChart() {
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const sorted = [...data].sort((a, b) => b.total - a.total).slice(0, 10)
+  const sorted = [...data].sort((a, b) => b.total - a.total).slice(0, 10);
 
   return (
     <Card>
@@ -122,14 +124,14 @@ export default function RevenueByCategoryChart() {
                       ? `${(v / 1_000).toFixed(0)}K`
                       : String(v)
                 }
-                tick={{ fontSize: 12, fill: '#94a3b8' }}
+                tick={{ fontSize: 12, fill: "#94a3b8" }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
                 type="category"
                 dataKey="category"
-                tick={{ fontSize: 12, fill: '#334155' }}
+                tick={{ fontSize: 12, fill: "#334155" }}
                 tickLine={false}
                 axisLine={false}
                 width={120}
@@ -148,5 +150,5 @@ export default function RevenueByCategoryChart() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

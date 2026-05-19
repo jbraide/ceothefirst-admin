@@ -54,6 +54,7 @@ export default function BusinessList() {
     queryKey: businessKeys.list(queryParams),
     queryFn: () => getBusinesses(queryParams),
     placeholderData: (prev) => prev,
+    staleTime: 30_000,
   });
 
   // Reset to page 1 when search changes

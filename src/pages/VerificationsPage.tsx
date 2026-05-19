@@ -1,4 +1,4 @@
-import PendingVerificationsList from '@/features/verifications/components/PendingVerificationsList';
+import PendingVerificationsList from "@/features/verifications/components/PendingVerificationsList";
 
 export default function VerificationsPage() {
   return (

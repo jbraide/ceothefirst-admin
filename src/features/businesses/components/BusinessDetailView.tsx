@@ -101,6 +101,7 @@ export default function BusinessDetailView() {
     queryKey: businessKeys.detail(id!),
     queryFn: () => getBusinessDetail(id!),
     enabled: !!id,
+    staleTime: 30_000,
   });
 
   const statusMutation = useMutation({

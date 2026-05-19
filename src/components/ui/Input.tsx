@@ -1,29 +1,28 @@
-import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react'
-import { cn } from '@/utils/cn'
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from "react";
+import { cn } from "@/utils/cn";
 
-export interface InputProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface InputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "size"
+> {
   /** Label displayed above the input */
-  label?: string
+  label?: string;
   /** Error message displayed below the input; also triggers error styling */
-  error?: string
+  error?: string;
   /** Optional icon rendered inside the input (left side) */
-  icon?: ReactNode
+  icon?: ReactNode;
   /** Optional content rendered on the right side of the input */
-  rightElement?: ReactNode
+  rightElement?: ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, icon, rightElement, id, ...props }, ref) => {
-    const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
+    const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
       <div className="flex w-full flex-col gap-1.5">
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-sm font-medium text-primary"
-          >
+          <label htmlFor={inputId} className="text-sm font-medium text-primary">
             {label}
           </label>
         )}
@@ -39,15 +38,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              'flex h-10 w-full rounded-md border border-primary/20 bg-white px-3 py-2 text-sm',
-              'placeholder:text-primary/40',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1',
-              'disabled:cursor-not-allowed disabled:opacity-50',
-              'file:border-0 file:bg-transparent file:text-sm file:font-medium',
-              icon && 'pl-10',
-              rightElement && 'pr-10',
-              error &&
-                'border-destructive focus-visible:ring-destructive',
+              "flex h-10 w-full rounded-md border border-primary/20 bg-white px-3 py-2 text-sm",
+              "placeholder:text-primary/40",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              "file:border-0 file:bg-transparent file:text-sm file:font-medium",
+              icon && "pl-10",
+              rightElement && "pr-10",
+              error && "border-destructive focus-visible:ring-destructive",
               className,
             )}
             aria-invalid={error ? true : undefined}
@@ -72,8 +70,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </p>
         )}
       </div>
-    )
+    );
   },
-)
+);
 
-Input.displayName = 'Input'
+Input.displayName = "Input";

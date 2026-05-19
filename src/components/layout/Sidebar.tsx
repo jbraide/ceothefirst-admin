@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Building2,
@@ -12,53 +12,53 @@ import {
   X,
   LogOut,
   type LucideIcon,
-} from 'lucide-react'
-import { useAuthStore } from '@/store/authStore'
-import { cn } from '@/utils/cn'
-import { Button } from '@/components/ui/Button'
+} from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/Button";
 
 /* ------------------------------------------------------------------ */
 /*  Nav item definition                                               */
 /* ------------------------------------------------------------------ */
 
 interface NavItem {
-  to: string
-  label: string
-  icon: LucideIcon
+  to: string;
+  label: string;
+  icon: LucideIcon;
 }
 
 const navItems: NavItem[] = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/businesses', label: 'Businesses', icon: Building2 },
-  { to: '/verifications', label: 'Verifications', icon: ShieldCheck },
-  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { to: '/search', label: 'Search', icon: Search },
-  { to: '/audit', label: 'Audit Logs', icon: ScrollText },
-  { to: '/notifications', label: 'Notifications', icon: Bell },
-]
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/businesses", label: "Businesses", icon: Building2 },
+  { to: "/verifications", label: "Verifications", icon: ShieldCheck },
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/search", label: "Search", icon: Search },
+  { to: "/audit", label: "Audit Logs", icon: ScrollText },
+  { to: "/notifications", label: "Notifications", icon: Bell },
+];
 
 /* ------------------------------------------------------------------ */
 /*  Sidebar                                                           */
 /* ------------------------------------------------------------------ */
 
 export default function Sidebar() {
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const logout = useAuthStore((s) => s.logout)
-  const navigate = useNavigate()
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout()
-    setMobileOpen(false)
-    navigate('/login', { replace: true })
-  }
+    logout();
+    setMobileOpen(false);
+    navigate("/login", { replace: true });
+  };
 
   const linkClasses = ({ isActive }: { isActive: boolean }) =>
     cn(
-      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
       isActive
-        ? 'bg-indigo-600 text-white'
-        : 'text-gray-300 hover:bg-gray-800 hover:text-white',
-    )
+        ? "bg-indigo-600 text-white"
+        : "text-gray-300 hover:bg-gray-800 hover:text-white",
+    );
 
   const sidebarContent = (
     <>
@@ -94,7 +94,7 @@ export default function Sidebar() {
           <NavLink
             key={to}
             to={to}
-            end={to === '/'}
+            end={to === "/"}
             className={linkClasses}
             onClick={() => setMobileOpen(false)}
           >
@@ -119,7 +119,7 @@ export default function Sidebar() {
         </Button>
       </div>
     </>
-  )
+  );
 
   return (
     <>
@@ -143,12 +143,12 @@ export default function Sidebar() {
       {/* ─── Sidebar panel ────────────────────────────────── */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-gray-950 transition-transform duration-200 ease-in-out lg:static lg:translate-x-0',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full',
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-gray-950 transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {sidebarContent}
       </aside>
     </>
-  )
+  );
 }

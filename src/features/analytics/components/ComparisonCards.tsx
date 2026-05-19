@@ -1,58 +1,54 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { TrendingUp, TrendingDown } from 'lucide-react'
-import { getComparison } from '../api/getComparison'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Spinner } from '@/components/ui/Spinner'
-import { naira } from '../utils'
-import RangeSelector from './RangeSelector'
-import type { AnalyticsRange } from '@/types/api'
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { TrendingUp, TrendingDown } from "lucide-react";
+import { getComparison } from "../api/getComparison";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Spinner } from "@/components/ui/Spinner";
+import { naira } from "../utils";
+import RangeSelector from "./RangeSelector";
+import type { AnalyticsRange } from "@/types/api";
 
 function DeltaBadge({
   delta,
   deltaPercent,
 }: {
-  delta: number
-  deltaPercent: number | null
+  delta: number;
+  deltaPercent: number | null;
 }) {
-  const isPositive = delta > 0
-  const isNeutral = delta === 0
+  const isPositive = delta > 0;
+  const isNeutral = delta === 0;
 
   if (isNeutral) {
     return (
       <span className="inline-flex items-center gap-1 text-xs text-gray-500">
         No change
       </span>
-    )
+    );
   }
 
   return (
     <span
       className={`inline-flex items-center gap-0.5 text-xs font-medium ${
-        isPositive ? 'text-emerald-600' : 'text-red-600'
+        isPositive ? "text-emerald-600" : "text-red-600"
       }`}
     >
-      {isPositive ? (
-        <TrendingUp size={14} />
-      ) : (
-        <TrendingDown size={14} />
-      )}
-      {isPositive ? '+' : ''}
+      {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+      {isPositive ? "+" : ""}
       {deltaPercent !== null
         ? `${deltaPercent.toFixed(1)}%`
         : naira.format(Math.abs(delta))}
     </span>
-  )
+  );
 }
 
 export default function ComparisonCards() {
-  const [range, setRange] = useState<AnalyticsRange>('30d')
+  const [range, setRange] = useState<AnalyticsRange>("30d");
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['analytics', 'comparison', range],
+    queryKey: ["analytics", "comparison", range],
     queryFn: () => getComparison({ range }),
     staleTime: 60_000,
-  })
+  });
 
   if (isLoading) {
     return (
@@ -64,7 +60,7 @@ export default function ComparisonCards() {
           <Spinner size={32} />
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (isError || !data) {
@@ -79,34 +75,34 @@ export default function ComparisonCards() {
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const { current, previous, deltas } = data
+  const { current, previous, deltas } = data;
 
   const cards = [
     {
-      title: 'Revenue',
+      title: "Revenue",
       currentValue: naira.format(current.totalRevenue),
       previousValue: naira.format(previous.totalRevenue),
       delta: deltas.revenueDelta,
       deltaPercent: deltas.revenueDeltaPercent,
     },
     {
-      title: 'Transactions',
+      title: "Transactions",
       currentValue: current.totalTransactions.toLocaleString(),
       previousValue: previous.totalTransactions.toLocaleString(),
       delta: deltas.transactionsDelta,
       deltaPercent: deltas.transactionsDeltaPercent,
     },
     {
-      title: 'New Businesses',
+      title: "New Businesses",
       currentValue: current.newBusinesses.toLocaleString(),
       previousValue: previous.newBusinesses.toLocaleString(),
       delta: deltas.newBusinessesDelta,
       deltaPercent: deltas.newBusinessesDeltaPercent,
     },
-  ]
+  ];
 
   return (
     <Card>
@@ -121,9 +117,7 @@ export default function ComparisonCards() {
               key={card.title}
               className="rounded-lg border border-gray-100 bg-gray-50/50 p-4"
             >
-              <p className="text-xs font-medium text-gray-500">
-                {card.title}
-              </p>
+              <p className="text-xs font-medium text-gray-500">{card.title}</p>
               <p className="mt-1 text-2xl font-bold text-gray-900">
                 {card.currentValue}
               </p>
@@ -141,5 +135,5 @@ export default function ComparisonCards() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

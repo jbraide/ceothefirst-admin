@@ -1,4 +1,4 @@
-import GlobalSearch from '@/features/search/components/GlobalSearch';
+import GlobalSearch from "@/features/search/components/GlobalSearch";
 
 export default function SearchPage() {
   return (

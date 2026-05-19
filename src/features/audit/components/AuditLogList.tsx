@@ -23,6 +23,7 @@ const actionVariant = (action: string) => {
   if (a.includes("create") || a.includes("add")) return "success";
   if (a.includes("update") || a.includes("edit") || a.includes("modify"))
     return "warning";
+  console.warn(`Unknown audit action type: ${action}`);
   return "secondary";
 };
 
@@ -33,6 +34,7 @@ export default function AuditLogList() {
     queryKey: ["auditLogs", page],
     queryFn: () => getAuditLogs({ page, limit: PAGE_SIZE }),
     placeholderData: (prev) => prev,
+    staleTime: 60_000,
   });
 
   const totalPages = data?.meta.totalPages ?? 1;
