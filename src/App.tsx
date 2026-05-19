@@ -10,6 +10,7 @@ import AnalyticsPage from "@/pages/AnalyticsPage";
 import SearchPage from "@/pages/SearchPage";
 import AuditLogsPage from "@/pages/AuditLogsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
+import AdminManagementPage from "@/pages/AdminManagementPage";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="search" element={<SearchPage />} />
           <Route path="audit" element={<AuditLogsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="admins" element={<AdminManagementPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useAuthStore } from "@/store/authStore";
+import type { AdminRole } from "@/types/api";
 
 const AUTH_TOKEN_KEY = "nf_admin_token";
 const AUTH_REFRESH_KEY = "nf_admin_refresh";
@@ -11,10 +12,17 @@ function clearAuthStorage() {
   localStorage.removeItem(AUTH_USER_KEY);
 }
 
+function makeUser(
+  name: string,
+  email: string,
+  role: AdminRole = "SUPER_ADMIN",
+) {
+  return { name, email, role };
+}
+
 describe("useAuthStore", () => {
   beforeEach(() => {
     clearAuthStorage();
-    // Reset store to initial (logged-out) state
     useAuthStore.setState({
       token: null,
       refreshToken: null,
@@ -47,7 +55,7 @@ describe("useAuthStore", () => {
 
   describe("login()", () => {
     it("sets tokens and isAuthenticated becomes true", () => {
-      const user = { name: "Alice", email: "alice@example.com" };
+      const user = makeUser("Alice", "alice@example.com");
       useAuthStore.getState().login({
         token: "access-abc",
         refreshToken: "refresh-xyz",
@@ -62,7 +70,7 @@ describe("useAuthStore", () => {
     });
 
     it("persists tokens and user to localStorage", () => {
-      const user = { name: "Bob", email: "bob@example.com" };
+      const user = makeUser("Bob", "bob@example.com");
       useAuthStore.getState().login({
         token: "tok-1",
         refreshToken: "ref-1",
@@ -77,14 +85,12 @@ describe("useAuthStore", () => {
 
   describe("logout()", () => {
     it("clears tokens and isAuthenticated becomes false", () => {
-      // First login
       useAuthStore.getState().login({
         token: "tok-abc",
         refreshToken: "ref-xyz",
-        user: { name: "Carol", email: "carol@example.com" },
+        user: makeUser("Carol", "carol@example.com"),
       });
 
-      // Then logout
       useAuthStore.getState().logout();
 
       const state = useAuthStore.getState();
@@ -98,7 +104,7 @@ describe("useAuthStore", () => {
       useAuthStore.getState().login({
         token: "tok",
         refreshToken: "ref",
-        user: { name: "Dan", email: "dan@example.com" },
+        user: makeUser("Dan", "dan@example.com"),
       });
       useAuthStore.getState().logout();
 
@@ -110,7 +116,7 @@ describe("useAuthStore", () => {
 
   describe("setTokens()", () => {
     it("updates tokens while preserving user", () => {
-      const user = { name: "Eve", email: "eve@example.com" };
+      const user = makeUser("Eve", "eve@example.com");
       useAuthStore.getState().login({
         token: "old-token",
         refreshToken: "old-refresh",
@@ -130,14 +136,13 @@ describe("useAuthStore", () => {
       useAuthStore.getState().login({
         token: "old-tok",
         refreshToken: "old-ref",
-        user: { name: "Frank", email: "frank@example.com" },
+        user: makeUser("Frank", "frank@example.com"),
       });
 
       useAuthStore.getState().setTokens("fresh-tok", "fresh-ref");
 
       expect(localStorage.getItem(AUTH_TOKEN_KEY)).toBe("fresh-tok");
       expect(localStorage.getItem(AUTH_REFRESH_KEY)).toBe("fresh-ref");
-      // User should still be persisted
       const stored = JSON.parse(localStorage.getItem(AUTH_USER_KEY)!);
       expect(stored.name).toBe("Frank");
     });
@@ -145,14 +150,11 @@ describe("useAuthStore", () => {
 
   describe("hydration from localStorage", () => {
     it("hydrates from localStorage when store is created after setting storage", () => {
-      // Pre-populate localStorage (simulating a previous session)
-      const user = { name: "Grace", email: "grace@example.com" };
+      const user = makeUser("Grace", "grace@example.com");
       localStorage.setItem(AUTH_TOKEN_KEY, "hydrated-token");
       localStorage.setItem(AUTH_REFRESH_KEY, "hydrated-refresh");
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
 
-      // Re-import triggers module-level loadFromStorage() but since the module
-      // is already cached, we simulate by directly setting state
       useAuthStore.setState({
         token: "hydrated-token",
         refreshToken: "hydrated-refresh",

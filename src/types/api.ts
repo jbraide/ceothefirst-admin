@@ -248,30 +248,53 @@ export interface TransactionsVolumePoint {
 }
 
 export interface RevenueByCategoryItem {
-  category: string;
-  total: number;
-  percentage: number;
+  category: string | null;
+  totalRevenue: number;
+  transactionCount: number;
+}
+
+export interface ComparisonMetricData {
+  current: number;
+  previous: number;
+  delta: number;
+  deltaPercent: number | null;
 }
 
 export interface ComparisonData {
-  current: {
-    totalRevenue: number;
-    totalTransactions: number;
-    newBusinesses: number;
+  period: { start: string; end: string };
+  previous: { start: string; end: string };
+  metrics: {
+    revenue: ComparisonMetricData;
+    transactions: ComparisonMetricData;
+    signups: ComparisonMetricData;
+    activeBusinesses: ComparisonMetricData;
   };
-  previous: {
-    totalRevenue: number;
-    totalTransactions: number;
-    newBusinesses: number;
-  };
-  deltas: {
-    revenueDelta: number;
-    revenueDeltaPercent: number | null;
-    transactionsDelta: number;
-    transactionsDeltaPercent: number | null;
-    newBusinessesDelta: number;
-    newBusinessesDeltaPercent: number | null;
-  };
+}
+
+// ─── Admin Accounts ────────────────────────────────────────────────
+
+export type AdminRole = "SUPER_ADMIN" | "SUPPORT_ADMIN" | "ANALYST";
+
+export interface CreateAdminRequest {
+  email: string;
+  password: string;
+  name: string;
+  role: AdminRole;
+}
+
+export interface AdminAccount {
+  id: string;
+  email: string;
+  name: string;
+  role: AdminRole;
+  createdAt: string;
+  isActive?: boolean;
+}
+
+export interface UpdateAdminRequest {
+  name?: string;
+  role?: AdminRole;
+  isActive?: boolean;
 }
 
 // ─── Notifications ──────────────────────────────────────────────────

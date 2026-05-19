@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Building2,
   ShieldCheck,
+  Shield,
   BarChart3,
   Search,
   ScrollText,
@@ -14,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import type { AdminRole } from "@/types/api";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/Button";
 
@@ -27,15 +29,42 @@ interface NavItem {
   icon: LucideIcon;
 }
 
-const navItems: NavItem[] = [
+const allNavItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/businesses", label: "Businesses", icon: Building2 },
   { to: "/verifications", label: "Verifications", icon: ShieldCheck },
+  { to: "/admins", label: "Admin Management", icon: Shield },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/search", label: "Search", icon: Search },
   { to: "/audit", label: "Audit Logs", icon: ScrollText },
   { to: "/notifications", label: "Notifications", icon: Bell },
 ];
+
+const roleAccess: Record<AdminRole, string[]> = {
+  SUPER_ADMIN: [
+    "dashboard",
+    "businesses",
+    "verifications",
+    "analytics",
+    "search",
+    "audit",
+    "notifications",
+    "admins",
+  ],
+  SUPPORT_ADMIN: ["dashboard", "analytics", "businesses", "search", "audit"],
+  ANALYST: ["dashboard", "analytics"],
+};
+
+const itemKeyMap: Record<string, string> = {
+  "/": "dashboard",
+  "/businesses": "businesses",
+  "/verifications": "verifications",
+  "/admins": "admins",
+  "/analytics": "analytics",
+  "/search": "search",
+  "/audit": "audit",
+  "/notifications": "notifications",
+};
 
 /* ------------------------------------------------------------------ */
 /*  Sidebar                                                           */
@@ -43,8 +72,14 @@ const navItems: NavItem[] = [
 
 export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+
+  const allowedKeys = user ? roleAccess[user.role] : [];
+  const navItems = allNavItems.filter(
+    (item) => allowedKeys.includes(itemKeyMap[item.to]) ?? false,
+  );
 
   const handleLogout = () => {
     logout();

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { AdminRole } from "@/types/api";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -7,6 +8,7 @@ import { create } from "zustand";
 export interface AdminUser {
   name: string;
   email: string;
+  role: AdminRole;
 }
 
 export interface AuthState {

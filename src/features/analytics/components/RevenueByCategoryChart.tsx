@@ -23,7 +23,11 @@ function CategoryTooltip({
 }: {
   active?: boolean;
   payload?: {
-    payload: { category: string; total: number; percentage: number };
+    payload: {
+      category: string | null;
+      totalRevenue: number;
+      transactionCount: number;
+    };
   }[];
 }) {
   if (!active || !payload?.length) return null;
@@ -31,9 +35,12 @@ function CategoryTooltip({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-lg">
-      <p className="text-sm font-semibold text-gray-900">{d.category}</p>
+      <p className="text-sm font-semibold text-gray-900">
+        {d.category ?? "Uncategorised"}
+      </p>
       <p className="text-xs text-gray-500">
-        {naira.format(d.total)} &middot; {d.percentage.toFixed(1)}%
+        {naira.format(d.totalRevenue)} &middot; {d.transactionCount} transaction
+        {d.transactionCount !== 1 ? "s" : ""}
       </p>
     </div>
   );
@@ -94,7 +101,9 @@ export default function RevenueByCategoryChart() {
     );
   }
 
-  const sorted = [...data].sort((a, b) => b.total - a.total).slice(0, 10);
+  const sorted = [...data]
+    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+    .slice(0, 10);
 
   return (
     <Card>
@@ -137,7 +146,7 @@ export default function RevenueByCategoryChart() {
                 width={120}
               />
               <Tooltip content={<CategoryTooltip />} />
-              <Bar dataKey="total" radius={[0, 4, 4, 0]} maxBarSize={24}>
+              <Bar dataKey="totalRevenue" radius={[0, 4, 4, 0]} maxBarSize={24}>
                 {sorted.map((entry, idx) => (
                   <Cell
                     key={entry.category}

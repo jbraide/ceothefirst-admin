@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { getComparison } from "../api/getComparison";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
-import { naira } from "../utils";
+import { naira, formatAxisDate } from "../utils";
 import RangeSelector from "./RangeSelector";
 import type { AnalyticsRange } from "@/types/api";
 
@@ -17,6 +17,15 @@ function DeltaBadge({
 }) {
   const isPositive = delta > 0;
   const isNeutral = delta === 0;
+
+  if (deltaPercent === null) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+        <Minus size={14} />
+        N/A
+      </span>
+    );
+  }
 
   if (isNeutral) {
     return (
@@ -34,9 +43,7 @@ function DeltaBadge({
     >
       {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
       {isPositive ? "+" : ""}
-      {deltaPercent !== null
-        ? `${deltaPercent.toFixed(1)}%`
-        : naira.format(Math.abs(delta))}
+      {deltaPercent.toFixed(1)}%
     </span>
   );
 }
@@ -78,40 +85,54 @@ export default function ComparisonCards() {
     );
   }
 
-  const { current, previous, deltas } = data;
+  const { period, previous: prevPeriod, metrics: m } = data;
 
   const cards = [
     {
       title: "Revenue",
-      currentValue: naira.format(current.totalRevenue),
-      previousValue: naira.format(previous.totalRevenue),
-      delta: deltas.revenueDelta,
-      deltaPercent: deltas.revenueDeltaPercent,
+      currentValue: naira.format(m.revenue.current),
+      previousValue: naira.format(m.revenue.previous),
+      delta: m.revenue.delta,
+      deltaPercent: m.revenue.deltaPercent,
     },
     {
       title: "Transactions",
-      currentValue: current.totalTransactions.toLocaleString(),
-      previousValue: previous.totalTransactions.toLocaleString(),
-      delta: deltas.transactionsDelta,
-      deltaPercent: deltas.transactionsDeltaPercent,
+      currentValue: m.transactions.current.toLocaleString(),
+      previousValue: m.transactions.previous.toLocaleString(),
+      delta: m.transactions.delta,
+      deltaPercent: m.transactions.deltaPercent,
     },
     {
       title: "New Businesses",
-      currentValue: current.newBusinesses.toLocaleString(),
-      previousValue: previous.newBusinesses.toLocaleString(),
-      delta: deltas.newBusinessesDelta,
-      deltaPercent: deltas.newBusinessesDeltaPercent,
+      currentValue: m.signups.current.toLocaleString(),
+      previousValue: m.signups.previous.toLocaleString(),
+      delta: m.signups.delta,
+      deltaPercent: m.signups.deltaPercent,
+    },
+    {
+      title: "Active Businesses",
+      currentValue: m.activeBusinesses.current.toLocaleString(),
+      previousValue: m.activeBusinesses.previous.toLocaleString(),
+      delta: m.activeBusinesses.delta,
+      deltaPercent: m.activeBusinesses.deltaPercent,
     },
   ];
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between">
-        <CardTitle>Period Comparison</CardTitle>
+        <div>
+          <CardTitle>Period Comparison</CardTitle>
+          <p className="mt-1 text-xs text-gray-500">
+            {formatAxisDate(period.start)} – {formatAxisDate(period.end)} vs{" "}
+            {formatAxisDate(prevPeriod.start)} –{" "}
+            {formatAxisDate(prevPeriod.end)}
+          </p>
+        </div>
         <RangeSelector value={range} onChange={setRange} />
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {cards.map((card) => (
             <div
               key={card.title}

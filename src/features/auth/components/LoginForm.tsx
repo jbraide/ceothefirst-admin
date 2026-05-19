@@ -5,6 +5,7 @@ import { LogIn, AlertCircle } from "lucide-react";
 
 import { loginAdmin } from "@/features/auth/api/login";
 import { useAuthStore } from "@/store/authStore";
+import type { AdminRole } from "@/types/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import {
@@ -17,6 +18,15 @@ import {
 import { Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/utils/cn";
 
+function decodeJwtPayload(token: string): { role?: string; sub?: string } {
+  try {
+    const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(base64));
+  } catch {
+    return {};
+  }
+}
+
 export default function LoginForm() {
   const navigate = useNavigate();
   const authLogin = useAuthStore((s) => s.login);
@@ -27,10 +37,15 @@ export default function LoginForm() {
   const mutation = useMutation({
     mutationFn: loginAdmin,
     onSuccess: (data) => {
+      const payload = decodeJwtPayload(data.accessToken);
       authLogin({
         token: data.accessToken,
         refreshToken: data.refreshToken,
-        user: { name: email.trim(), email: email.trim() },
+        user: {
+          name: email.trim(),
+          email: email.trim(),
+          role: (payload.role as AdminRole) ?? "ANALYST",
+        },
       });
       navigate("/", { replace: true });
     },
