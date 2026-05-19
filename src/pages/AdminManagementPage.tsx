@@ -46,7 +46,7 @@ export default function AdminManagementPage() {
             Create and manage admin accounts and permissions.
           </p>
         </div>
-        <Button onClick={() => { console.log("Create Admin button clicked"); setCreateOpen(true); }}>
+        <Button onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" />
           Create Admin
         </Button>

@@ -1,21 +1,15 @@
-import { useEffect, useCallback, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useClickOutside } from "@/hooks/useClickOutside";
 
 export interface ModalProps {
-  /** Whether the modal is currently visible */
   open: boolean;
-  /** Called when the modal should close */
   onClose: () => void;
-  /** Title rendered in the modal header */
   title?: string;
-  /** Accessible description (visually hidden) */
   description?: string;
-  /** Modal body content */
   children?: ReactNode;
-  /** Additional class names applied to the inner panel */
   className?: string;
 }
 
@@ -27,42 +21,40 @@ export function Modal({
   children,
   className,
 }: ModalProps) {
-  /* ---- Escape key handler ---- */
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    },
-    [onClose],
-  );
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
+  /* ---- Escape key handler ---- */
   useEffect(() => {
-    if (open) {
-      document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
+    if (!open) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onCloseRef.current();
+      }
     }
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
-  }, [open, handleKeyDown]);
+  }, [open]);
 
   /* ---- Backdrop click handler ---- */
   const backdropRef = useClickOutside<HTMLDivElement>(onClose);
 
-  console.log("Modal render, open:", open); if (!open) return null;
+  if (!open) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         aria-hidden="true"
       />
 
-      {/* Panel */}
       <div
         ref={backdropRef}
         role="dialog"
@@ -74,7 +66,6 @@ export function Modal({
           className,
         )}
       >
-        {/* Header */}
         {(title || description) && (
           <div className="flex items-start justify-between gap-4 border-b border-primary/10 px-6 py-4">
             <div className="flex flex-col gap-1">
@@ -104,7 +95,6 @@ export function Modal({
           </div>
         )}
 
-        {/* Body */}
         <div className="overflow-y-auto px-6 py-4">{children}</div>
       </div>
     </div>,
