@@ -56,7 +56,7 @@ export default function DashboardPage() {
 function ActiveBusinessesSummary() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["analytics", "active-businesses", "30d"],
-    queryFn: () => getActiveBusinesses(),
+    queryFn: () => getActiveBusinesses({ range: "30d" }),
     staleTime: 60_000,
   });
 
@@ -105,7 +105,7 @@ function ActiveBusinessesSummary() {
 function AverageVolumeCard() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["analytics", "average-volume", "30d"],
-    queryFn: () => getAverageVolume(),
+    queryFn: () => getAverageVolume({ range: "30d" }),
     staleTime: 60_000,
   });
 

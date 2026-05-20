@@ -49,7 +49,7 @@ function DeltaBadge({
 }
 
 export default function ComparisonCards() {
-  const [range, setRange] = useState<AnalyticsRange>("30d");
+  const [range, setRange] = useState<AnalyticsRange>("7d");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["analytics", "comparison", range],
@@ -124,9 +124,10 @@ export default function ComparisonCards() {
         <div>
           <CardTitle>Period Comparison</CardTitle>
           <p className="mt-1 text-xs text-gray-500">
-            {formatAxisDate(period.start)} – {formatAxisDate(period.end)} vs{" "}
-            {formatAxisDate(prevPeriod.start)} –{" "}
-            {formatAxisDate(prevPeriod.end)}
+            {formatAxisDate(period.start, range)} –{" "}
+            {formatAxisDate(period.end, range)} vs{" "}
+            {formatAxisDate(prevPeriod.start, range)} –{" "}
+            {formatAxisDate(prevPeriod.end, range)}
           </p>
         </div>
         <RangeSelector value={range} onChange={setRange} />

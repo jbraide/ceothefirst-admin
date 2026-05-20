@@ -22,16 +22,18 @@ function SignupsTooltip({
   active,
   payload,
   label,
+  range,
 }: {
   active?: boolean;
   payload?: { value: number }[];
   label?: string;
+  range: AnalyticsRange;
 }) {
   if (!active || !payload?.length || !label) return null;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-lg">
-      <p className="text-xs text-gray-500">{formatAxisDate(label)}</p>
+      <p className="text-xs text-gray-500">{formatAxisDate(label, range)}</p>
       <p className="text-sm font-semibold text-gray-900">
         {payload[0].value} signup{payload[0].value === 1 ? "" : "s"}
       </p>
@@ -94,7 +96,7 @@ export default function SignupsChart() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis
                 dataKey="date"
-                tickFormatter={formatAxisDate}
+                tickFormatter={(v: string) => formatAxisDate(v, range)}
                 tick={{ fontSize: 12, fill: "#94a3b8" }}
                 tickLine={false}
                 axisLine={{ stroke: "#e2e8f0" }}
@@ -107,7 +109,7 @@ export default function SignupsChart() {
                 axisLine={false}
                 width={40}
               />
-              <Tooltip content={<SignupsTooltip />} />
+              <Tooltip content={<SignupsTooltip range={range} />} />
               <Bar
                 dataKey="count"
                 fill="#10b981"

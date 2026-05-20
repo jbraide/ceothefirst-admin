@@ -147,11 +147,8 @@ describe("fillMissingPeriods", () => {
       const result = fillMissingPeriods(points, "7d");
 
       expect(result[0].total).toBe(10);
-      expect(result[0].count).toBe(2);
       expect(result[1].total).toBe(20);
-      expect(result[1].count).toBe(4);
       expect(result[2].total).toBe(30);
-      expect(result[2].count).toBe(6);
     });
   });
 

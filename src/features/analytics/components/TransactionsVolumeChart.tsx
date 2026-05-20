@@ -24,10 +24,12 @@ function VolumeTooltip({
   active,
   payload,
   label,
+  range,
 }: {
   active?: boolean;
   payload?: { name: string; value: number }[];
   label?: string;
+  range: AnalyticsRange;
 }) {
   if (!active || !payload?.length || !label) return null;
 
@@ -36,7 +38,7 @@ function VolumeTooltip({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-lg">
-      <p className="text-xs text-gray-500">{formatAxisDate(label)}</p>
+      <p className="text-xs text-gray-500">{formatAxisDate(label, range)}</p>
       {countItem !== undefined && (
         <p className="text-sm font-semibold text-blue-600">
           {countItem.value} transactions
@@ -129,7 +131,7 @@ export default function TransactionsVolumeChart() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis
                 dataKey="date"
-                tickFormatter={formatAxisDate}
+                tickFormatter={(v: string) => formatAxisDate(v, range)}
                 tick={{ fontSize: 12, fill: "#94a3b8" }}
                 tickLine={false}
                 axisLine={{ stroke: "#e2e8f0" }}
@@ -158,7 +160,7 @@ export default function TransactionsVolumeChart() {
                 axisLine={false}
                 width={60}
               />
-              <Tooltip content={<VolumeTooltip />} />
+              <Tooltip content={<VolumeTooltip range={range} />} />
               <Legend />
               <Bar
                 yAxisId="left"
