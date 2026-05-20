@@ -80,6 +80,9 @@ export default function RevenueChart() {
 
   const filled = fillMissingPeriods(data, range, "total");
 
+  // Compute explicit domain max from actual data so Recharts never caps it
+  const yMax = filled.reduce((max, d) => Math.max(max, d.total ?? 0), 0);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between">
@@ -104,7 +107,7 @@ export default function RevenueChart() {
               />
               <YAxis
                 type="number"
-                domain={[0, "auto"]}
+                domain={[0, yMax || 1]}
                 tickFormatter={(v: number) =>
                   v >= 1_000_000
                     ? `${(v / 1_000_000).toFixed(1)}M`

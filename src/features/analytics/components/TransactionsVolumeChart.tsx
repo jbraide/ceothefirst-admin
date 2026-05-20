@@ -110,10 +110,16 @@ export default function TransactionsVolumeChart() {
     );
   }
 
-  const filled = fillMissingPeriods(data, range, "count").map((p) => ({
+  // Fill both keys independently so total values aren't lost
+  const countData = fillMissingPeriods(data, range, "count");
+  const totalData = fillMissingPeriods(data, range, "total");
+  const filled = countData.map((p, i) => ({
     ...p,
-    total: p.total ?? 0,
+    total: totalData[i]?.total ?? 0,
   }));
+
+  const countMax = filled.reduce((max, d) => Math.max(max, d.count ?? 0), 0);
+  const totalMax = filled.reduce((max, d) => Math.max(max, d.total ?? 0), 0);
 
   return (
     <Card>
@@ -140,7 +146,7 @@ export default function TransactionsVolumeChart() {
               <YAxis
                 yAxisId="left"
                 type="number"
-                domain={[0, "auto"]}
+                domain={[0, countMax || 1]}
                 allowDecimals={false}
                 tick={{ fontSize: 12, fill: "#3b82f6" }}
                 tickLine={false}
@@ -151,7 +157,7 @@ export default function TransactionsVolumeChart() {
                 yAxisId="right"
                 orientation="right"
                 type="number"
-                domain={[0, "auto"]}
+                domain={[0, totalMax || 1]}
                 tickFormatter={(v: number) =>
                   v >= 1_000_000
                     ? `${(v / 1_000_000).toFixed(1)}M`

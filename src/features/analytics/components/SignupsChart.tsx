@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -80,6 +80,9 @@ export default function SignupsChart() {
 
   const filled = fillMissingPeriods(data, range, "count");
 
+  // Compute explicit domain max from actual data so Recharts never caps it
+  const yMax = filled.reduce((max, d) => Math.max(max, d.count ?? 0), 0);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between">
@@ -89,7 +92,7 @@ export default function SignupsChart() {
       <CardContent>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
+            <LineChart
               data={filled}
               margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
             >
@@ -104,7 +107,7 @@ export default function SignupsChart() {
               />
               <YAxis
                 type="number"
-                domain={[0, "auto"]}
+                domain={[0, yMax || 1]}
                 allowDecimals={false}
                 tick={{ fontSize: 12, fill: "#94a3b8" }}
                 tickLine={false}
@@ -112,13 +115,15 @@ export default function SignupsChart() {
                 width={40}
               />
               <Tooltip content={<SignupsTooltip range={range} />} />
-              <Bar
+              <Line
+                type="monotone"
                 dataKey="count"
-                fill="#10b981"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={32}
+                stroke="#10b981"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, fill: "#10b981" }}
               />
-            </BarChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
