@@ -16,10 +16,12 @@ export function useClickOutside<T extends HTMLElement>(
       }
     }
 
-    document.addEventListener("click", handleClick as EventListener);
+    // mousedown is used (not click) so that the click which *opened* the
+    // modal doesn't bubble to the document and immediately trigger onClose.
+    document.addEventListener("mousedown", handleClick as EventListener);
     document.addEventListener("touchend", handleClick as EventListener);
     return () => {
-      document.removeEventListener("click", handleClick as EventListener);
+      document.removeEventListener("mousedown", handleClick as EventListener);
       document.removeEventListener("touchend", handleClick as EventListener);
     };
   }, []); // Only set up once — handlerRef always has latest handler
