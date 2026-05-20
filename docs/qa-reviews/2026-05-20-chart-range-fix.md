@@ -1,157 +1,106 @@
-# QA Review — Chart Range & Display Issues
+# QA Review — Chart Y-Axis Dynamic Scaling & Data Loss
 
 **Date:** 2026-05-20  
 **Reviewer:** QA Specialist  
 **Scope:** Analytics time-series charts (Revenue, Signups, Transactions Volume)  
-**Verdict:** 🔴 BLOCK — single root cause affecting all ranges
+**Verdict:** 🔴 BLOCK — two confirmed bugs, one file each
 
 ---
 
-## Root Cause
+## 🔴 Bug 1: `domain={[0, "auto"]}` is not a valid Recharts value
 
-`fillMissingPeriods` in `src/features/analytics/utils.ts` computes the chart range from **the earliest data point returned by the API** (`minTs`), not from the selected analytics range.
+**Files:**
+- `src/features/analytics/components/RevenueChart.tsx:112`
+- `src/features/analytics/components/SignupsChart.tsx:103`
+- `src/features/analytics/components/TransactionsVolumeChart.tsx:147,157`
 
-Every range branch follows this pattern:
+**What's happening:** Every chart YAxis uses `domain={[0, "auto"]}`, but Recharts does **not** recognize the string `"auto"` as a valid domain value. It silently ignores it and falls back to its default tick-based domain calculation — which rounds to "nice" numbers based on tick count, completely ignoring the actual data max.
 
-```ts
-const start = new Date(minTs);  // ← BUG: uses earliest data point, not range start
+This is why 7d/30d/90d all cap at ~8k regardless of data values. The tick algorithm picks a nice round number like 8000 and Recharts never sees the 300k data points when determining the domain.
+
+**Valid Recharts `domain` values:**
+| Value | Meaning |
+|-------|---------|
+| `"dataMin"` | Use the minimum data value |
+| `"dataMax"` | Use the maximum data value |
+| `(dataMin) => number` | Function returning custom min |
+| `(dataMax) => number` | Function returning custom max |
+| `number` | Hardcoded value |
+| `"auto"` | ❌ Not recognized — silently ignored |
+
+**Fix:** Replace `"auto"` with `"dataMax"` on every YAxis:
+
+```tsx
+// Before (broken)
+domain={[0, "auto"]}
+
+// After (correct)
+domain={[0, "dataMax"]}
 ```
 
-This means if the API returns data for only a narrow window, the chart shows only that window — not the full range the user selected.
+Three occurrences across three files:
 
----
+```tsx
+// RevenueChart.tsx:112
+<YAxis type="number" domain={[0, "dataMax"]} ... />
 
-## 🔴 Blockers
+// SignupsChart.tsx:103
+<YAxis type="number" domain={[0, "dataMax"]} ... />
 
-### 1. All time ranges produce truncated charts
+// TransactionsVolumeChart.tsx:147 (left axis)
+<YAxis yAxisId="left" type="number" domain={[0, "dataMax"]} ... />
 
-**File:** `src/features/analytics/utils.ts` — `fillMissingPeriods()`
-
-Every range branch (`today/yesterday`, `90d`, `1y/all`, `7d/30d`) starts from `minTs` instead of the appropriate range boundary. Fix: calculate `start` from `maxTs` (or `now`) minus the range duration.
-
-| Range | Current behavior | Expected behavior |
-|-------|-----------------|-------------------|
-| **Today** | Hours from earliest API data hour to latest | Full 24 hours (00:00–23:00) of today |
-| **Yesterday** | Same — truncated hourly range | Full 24 hours of yesterday |
-| **7d** | Days from first to last data point (could be 2–3 days) | Always 7 days back from today |
-| **30d** | Same problem — might show 10–15 days | Always 30 days back from today |
-| **90d** | Weeks from first to last data week | Always ~13 weeks back from today |
-| **1y** | Months from first to last data month (could be 1–2 dots) | Always 12 months back from today |
-| **all** | Correct — should span full data range | Keep as-is |
-
-**Suggested fix — per-range start calculation:**
-
-```ts
-// Compute rangeEnd from maxTs (latest data point is the anchor)
-const rangeEnd = new Date(maxTs);
-
-let rangeStart: Date;
-
-switch (range) {
-  case "today": {
-    rangeStart = new Date(rangeEnd);
-    rangeStart.setHours(0, 0, 0, 0);
-    break;
-  }
-  case "yesterday": {
-    rangeStart = new Date(rangeEnd);
-    rangeStart.setDate(rangeStart.getDate() - 1);
-    rangeStart.setHours(0, 0, 0, 0);
-    // Adjust rangeEnd to yesterday at 23:00
-    rangeEnd.setDate(rangeEnd.getDate() - 1);
-    rangeEnd.setHours(23, 0, 0, 0);
-    break;
-  }
-  case "7d": {
-    rangeStart = new Date(rangeEnd);
-    rangeStart.setDate(rangeStart.getDate() - 6);
-    rangeStart.setHours(0, 0, 0, 0);
-    break;
-  }
-  case "30d": {
-    rangeStart = new Date(rangeEnd);
-    rangeStart.setDate(rangeStart.getDate() - 29);
-    rangeStart.setHours(0, 0, 0, 0);
-    break;
-  }
-  case "90d": {
-    rangeStart = new Date(rangeEnd);
-    rangeStart.setDate(rangeStart.getDate() - 89);
-    // Align to Monday
-    const day = rangeStart.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    rangeStart.setDate(rangeStart.getDate() + diff);
-    rangeStart.setHours(0, 0, 0, 0);
-    break;
-  }
-  case "1y": {
-    rangeStart = new Date(rangeEnd);
-    rangeStart.setMonth(rangeStart.getMonth() - 11);
-    rangeStart.setDate(1);
-    rangeStart.setHours(0, 0, 0, 0);
-    break;
-  }
-  case "all":
-  default: {
-    rangeStart = new Date(minTs);
-    break;
-  }
-}
+// TransactionsVolumeChart.tsx:157 (right axis)
+<YAxis yAxisId="right" type="number" domain={[0, "dataMax"]} ... />
 ```
 
-Then use `rangeStart` instead of `start` in each branch's loop.
-
 ---
 
-### 2. "Today" not loading at all
+## 🔴 Bug 2: TransactionsVolumeChart — `total` field wiped to zero
 
-**File:** `src/features/analytics/utils.ts`
+**File:** `src/features/analytics/components/TransactionsVolumeChart.tsx:115-118`
 
-Secondary issue: the "today" hourly bucket uses `current.toISOString().slice(0, 13)`, producing keys like `"2026-05-20T14"`. If the API returns dates in a different format (e.g., `"2026-05-20T14:00:00.000Z"`), the hour map lookup will never match, resulting in all zeros.
-
-This may be exacerbated by the fact that with `minTs`-based range, if `minTs` and `maxTs` are within the same hour, only 1 bucket is produced.
-
-**Suggested fix:** Ensure both the map key and bucket key use the same ISO hour format. Consider normalizing the API date to local time before slicing.
-
----
-
-### 3. Y-axis max stuck at 8k for 7d/30d/90d
-
-**File:** `src/features/analytics/components/RevenueChart.tsx`  
-**File:** `src/features/analytics/components/SignupsChart.tsx`  
-**File:** `src/features/analytics/components/TransactionsVolumeChart.tsx`
-
-These charts already have `domain={[0, "auto"]}` (added in commit `827b2ad`), which should dynamically scale the Y-axis. But because the chart data is truncated (issue #1), the highest visible data point may genuinely be 8k. The data above 8k exists in the API response but falls outside the truncated `minTs`–`maxTs` window and gets excluded.
-
-**This is a symptom of issue #1, not a separate bug.** Fixing the range calculation should resolve this automatically.
-
----
-
-### 4. 1yr shows "just a dot"
-
-**File:** `src/features/analytics/utils.ts` — monthly branch
-
-Monthly aggregation works correctly:
 ```ts
-const key = `${pt.date.getFullYear()}-${String(pt.date.getMonth() + 1).padStart(2, "0")}`;
+const filled = fillMissingPeriods(data, range, "count").map((p) => ({
+    ...p,
+    total: p.total ?? 0,
+}));
 ```
 
-But `start` is set to the earliest month with data, and the loop runs `start` → `maxTs`. If API data spans only 1–2 months, only 1–2 buckets are produced.
+**What's happening:** `fillMissingPeriods` is called with `valueKey: "count"`. This means every entry in the output array has only `{ date, count }` — the original `total` field is **discarded**. Then the `.map()` does `total: p.total ?? 0`, which sets `total` to 0 for **every single entry** since `p.total` is always `undefined`.
 
-**Same root cause as #1.** With the fix, the chart will always produce 12 monthly buckets for "1y".
+The `Line` component at line 177 reads `dataKey="total"` — so the revenue line is always flat at ₦0. Visible data only appears when a data point happens to have both count and total from the original (which fillMissingPeriods drops).
+
+**Fix — option A (simplest):** Run `fillMissingPeriods` twice, once for each key:
+
+```ts
+const filled = fillMissingPeriods(data, range, "count").map((p, i) => {
+    const byTotal = fillMissingPeriods(data, range, "total");
+    return { ...p, total: byTotal[i]?.total ?? 0 };
+});
+```
+
+**Fix — option B (cleaner):** Modify `fillMissingPeriods` to accept multiple value keys and preserve all of them through aggregation and gap-filling. Not scope of this review but recommended long-term.
+
+---
+
+## 🟡 Consistency: Mixed chart types
+
+**Files:**
+- `src/features/analytics/components/RevenueChart.tsx` — `LineChart`
+- `src/features/analytics/components/SignupsChart.tsx` — `BarChart`  
+- `src/features/analytics/components/TransactionsVolumeChart.tsx` — `ComposedChart` (Bar + Line)
+
+The user wants consistent line charts across all time-series views. The BarChart for signups and the ComposedChart for transactions volume should become LineCharts (or at minimum, Signups should be a LineChart for visual consistency).
 
 ---
 
 ## Summary
 
-All 5 reported issues stem from a single bug: `fillMissingPeriods` anchors the range to the earliest data point instead of enforcing the full selected period. The `domain={[0, "auto"]}` fix from `827b2ad` is correct but ineffective because the data itself is truncated.
+| Issue | File | Fix |
+|-------|------|-----|
+| Y-axis stuck at 8k for all ranges | 3 chart files | `"auto"` → `"dataMax"` (3 occurrences) |
+| TransactionsVolume revenue line flat at ₦0 | `TransactionsVolumeChart.tsx:115` | Preserve `total` through fill or call fill twice |
+| Mixed chart types | 2 chart files | Switch Signups to `LineChart` |
 
-| Issue | Root cause | Fixed by |
-|-------|-----------|----------|
-| Today not loading | `minTs` range + possible hour format mismatch | Issue #1 fix |
-| Yesterday Y-axis capped | Data truncated by `minTs` range | Issue #1 fix |
-| 7d/30d/90d stuck at 8k | Data truncated by `minTs` range | Issue #1 fix |
-| 30d doesn't show 30 days | `minTs` range produces <30 day window | Issue #1 fix |
-| 1y is just a dot | `minTs` range produces <12 month window | Issue #1 fix |
-
-**One fix, one file (`utils.ts`), one function (`fillMissingPeriods`).**
+**Two one-liner fixes and one structural fix.** The `"auto"` → `"dataMax"` change alone will fix the Y-axis scaling for RevenueChart and SignupsChart immediately.

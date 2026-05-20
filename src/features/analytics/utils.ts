@@ -133,44 +133,44 @@ export function fillMissingPeriods(
   switch (range) {
     case "today": {
       rangeStart = new Date(rangeEnd);
-      rangeStart.setHours(0, 0, 0, 0);
+      rangeStart.setUTCHours(0, 0, 0, 0);
       break;
     }
     case "yesterday": {
       rangeStart = new Date(rangeEnd);
-      rangeStart.setDate(rangeStart.getDate() - 1);
-      rangeStart.setHours(0, 0, 0, 0);
-      rangeEnd.setDate(rangeEnd.getDate() - 1);
-      rangeEnd.setHours(23, 0, 0, 0);
+      rangeStart.setUTCDate(rangeStart.getUTCDate() - 1);
+      rangeStart.setUTCHours(0, 0, 0, 0);
+      rangeEnd.setUTCDate(rangeEnd.getUTCDate() - 1);
+      rangeEnd.setUTCHours(23, 0, 0, 0);
       break;
     }
     case "7d": {
       rangeStart = new Date(rangeEnd);
-      rangeStart.setDate(rangeStart.getDate() - 6);
-      rangeStart.setHours(0, 0, 0, 0);
+      rangeStart.setUTCDate(rangeStart.getUTCDate() - 6);
+      rangeStart.setUTCHours(0, 0, 0, 0);
       break;
     }
     case "30d": {
       rangeStart = new Date(rangeEnd);
-      rangeStart.setDate(rangeStart.getDate() - 29);
-      rangeStart.setHours(0, 0, 0, 0);
+      rangeStart.setUTCDate(rangeStart.getUTCDate() - 29);
+      rangeStart.setUTCHours(0, 0, 0, 0);
       break;
     }
     case "90d": {
       rangeStart = new Date(rangeEnd);
-      rangeStart.setDate(rangeStart.getDate() - 89);
+      rangeStart.setUTCDate(rangeStart.getUTCDate() - 89);
       // Align to Monday
-      const day = rangeStart.getDay();
+      const day = rangeStart.getUTCDay();
       const diff = day === 0 ? -6 : 1 - day;
-      rangeStart.setDate(rangeStart.getDate() + diff);
-      rangeStart.setHours(0, 0, 0, 0);
+      rangeStart.setUTCDate(rangeStart.getUTCDate() + diff);
+      rangeStart.setUTCHours(0, 0, 0, 0);
       break;
     }
     case "1y": {
       rangeStart = new Date(rangeEnd);
-      rangeStart.setMonth(rangeStart.getMonth() - 11);
-      rangeStart.setDate(1);
-      rangeStart.setHours(0, 0, 0, 0);
+      rangeStart.setUTCMonth(rangeStart.getUTCMonth() - 11);
+      rangeStart.setUTCDate(1);
+      rangeStart.setUTCHours(0, 0, 0, 0);
       break;
     }
     case "all":
@@ -186,18 +186,18 @@ export function fillMissingPeriods(
     // ── Hourly ──────────────────────────────────────────────────────
     case "today":
     case "yesterday": {
-      // Build a map keyed by local hour (e.g. "2026-05-15T14")
+      // Build a map keyed by UTC hour (e.g. "2026-05-15T14")
       const hourMap = new Map<string, number>();
       for (const pt of valid) {
-        const key = `${pt.date.getFullYear()}-${String(pt.date.getMonth() + 1).padStart(2, "0")}-${String(pt.date.getDate()).padStart(2, "0")}T${String(pt.date.getHours()).padStart(2, "0")}`;
+        const key = `${pt.date.getUTCFullYear()}-${String(pt.date.getUTCMonth() + 1).padStart(2, "0")}-${String(pt.date.getUTCDate()).padStart(2, "0")}T${String(pt.date.getUTCHours()).padStart(2, "0")}`;
         hourMap.set(key, (hourMap.get(key) ?? 0) + pt.val);
       }
 
       const current = new Date(rangeStart);
       while (current.getTime() <= rangeEnd.getTime()) {
-        const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}T${String(current.getHours()).padStart(2, "0")}`;
+        const key = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, "0")}-${String(current.getUTCDate()).padStart(2, "0")}T${String(current.getUTCHours()).padStart(2, "0")}`;
         filled.push({ date: key, [valueKey]: hourMap.get(key) ?? 0 });
-        current.setHours(current.getHours() + 1);
+        current.setUTCHours(current.getUTCHours() + 1);
       }
       break;
     }
@@ -207,20 +207,20 @@ export function fillMissingPeriods(
       // Aggregate raw daily data into ISO-week buckets keyed by Monday date
       const weekMap = new Map<string, number>();
       for (const pt of valid) {
-        const day = pt.date.getDay();
+        const day = pt.date.getUTCDay();
         const diff = day === 0 ? -6 : 1 - day;
         const monday = new Date(pt.date);
-        monday.setDate(monday.getDate() + diff);
-        monday.setHours(0, 0, 0, 0);
-        const key = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
+        monday.setUTCDate(monday.getUTCDate() + diff);
+        monday.setUTCHours(0, 0, 0, 0);
+        const key = `${monday.getUTCFullYear()}-${String(monday.getUTCMonth() + 1).padStart(2, "0")}-${String(monday.getUTCDate()).padStart(2, "0")}`;
         weekMap.set(key, (weekMap.get(key) ?? 0) + pt.val);
       }
 
       const current = new Date(rangeStart);
       while (current.getTime() <= rangeEnd.getTime()) {
-        const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
+        const key = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, "0")}-${String(current.getUTCDate()).padStart(2, "0")}`;
         filled.push({ date: key, [valueKey]: weekMap.get(key) ?? 0 });
-        current.setDate(current.getDate() + 7);
+        current.setUTCDate(current.getUTCDate() + 7);
       }
       break;
     }
@@ -231,33 +231,33 @@ export function fillMissingPeriods(
       // Aggregate raw daily data into YYYY-MM buckets
       const monthMap = new Map<string, number>();
       for (const pt of valid) {
-        const key = `${pt.date.getFullYear()}-${String(pt.date.getMonth() + 1).padStart(2, "0")}`;
+        const key = `${pt.date.getUTCFullYear()}-${String(pt.date.getUTCMonth() + 1).padStart(2, "0")}`;
         monthMap.set(key, (monthMap.get(key) ?? 0) + pt.val);
       }
 
       const current = new Date(rangeStart);
       while (current.getTime() <= rangeEnd.getTime()) {
-        const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
+        const key = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, "0")}`;
         filled.push({ date: key, [valueKey]: monthMap.get(key) ?? 0 });
-        current.setMonth(current.getMonth() + 1);
+        current.setUTCMonth(current.getUTCMonth() + 1);
       }
       break;
     }
 
     // ── Daily (default: 7d / 30d) ──────────────────────────────────
     default: {
-      // Build a map keyed by YYYY-MM-DD (using local date parts for timezone safety)
+      // Build a map keyed by YYYY-MM-DD (using UTC date parts for timezone safety)
       const dayMap = new Map<string, number>();
       for (const pt of valid) {
-        const key = `${pt.date.getFullYear()}-${String(pt.date.getMonth() + 1).padStart(2, "0")}-${String(pt.date.getDate()).padStart(2, "0")}`;
+        const key = `${pt.date.getUTCFullYear()}-${String(pt.date.getUTCMonth() + 1).padStart(2, "0")}-${String(pt.date.getUTCDate()).padStart(2, "0")}`;
         dayMap.set(key, (dayMap.get(key) ?? 0) + pt.val);
       }
 
       const current = new Date(rangeStart);
       while (current.getTime() <= rangeEnd.getTime()) {
-        const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
+        const key = `${current.getUTCFullYear()}-${String(current.getUTCMonth() + 1).padStart(2, "0")}-${String(current.getUTCDate()).padStart(2, "0")}`;
         filled.push({ date: key, [valueKey]: dayMap.get(key) ?? 0 });
-        current.setDate(current.getDate() + 1);
+        current.setUTCDate(current.getUTCDate() + 1);
       }
       break;
     }
