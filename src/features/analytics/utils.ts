@@ -126,28 +126,77 @@ export function fillMissingPeriods(
   const minTs = Math.min(...timestamps);
   const maxTs = Math.max(...timestamps);
 
+  // Anchor to the latest data point, then go backwards by range duration
+  const rangeEnd = new Date(maxTs);
+  let rangeStart: Date;
+
+  switch (range) {
+    case "today": {
+      rangeStart = new Date(rangeEnd);
+      rangeStart.setHours(0, 0, 0, 0);
+      break;
+    }
+    case "yesterday": {
+      rangeStart = new Date(rangeEnd);
+      rangeStart.setDate(rangeStart.getDate() - 1);
+      rangeStart.setHours(0, 0, 0, 0);
+      rangeEnd.setDate(rangeEnd.getDate() - 1);
+      rangeEnd.setHours(23, 0, 0, 0);
+      break;
+    }
+    case "7d": {
+      rangeStart = new Date(rangeEnd);
+      rangeStart.setDate(rangeStart.getDate() - 6);
+      rangeStart.setHours(0, 0, 0, 0);
+      break;
+    }
+    case "30d": {
+      rangeStart = new Date(rangeEnd);
+      rangeStart.setDate(rangeStart.getDate() - 29);
+      rangeStart.setHours(0, 0, 0, 0);
+      break;
+    }
+    case "90d": {
+      rangeStart = new Date(rangeEnd);
+      rangeStart.setDate(rangeStart.getDate() - 89);
+      // Align to Monday
+      const day = rangeStart.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      rangeStart.setDate(rangeStart.getDate() + diff);
+      rangeStart.setHours(0, 0, 0, 0);
+      break;
+    }
+    case "1y": {
+      rangeStart = new Date(rangeEnd);
+      rangeStart.setMonth(rangeStart.getMonth() - 11);
+      rangeStart.setDate(1);
+      rangeStart.setHours(0, 0, 0, 0);
+      break;
+    }
+    case "all":
+    default: {
+      rangeStart = new Date(minTs);
+      break;
+    }
+  }
+
   const filled: TimeSeriesPoint[] = [];
 
   switch (range) {
     // ── Hourly ──────────────────────────────────────────────────────
     case "today":
     case "yesterday": {
-      // Build a map keyed by ISO hour (e.g. "2026-05-15T14")
+      // Build a map keyed by local hour (e.g. "2026-05-15T14")
       const hourMap = new Map<string, number>();
       for (const pt of valid) {
-        const key = pt.date.toISOString().slice(0, 13);
+        const key = `${pt.date.getFullYear()}-${String(pt.date.getMonth() + 1).padStart(2, "0")}-${String(pt.date.getDate()).padStart(2, "0")}T${String(pt.date.getHours()).padStart(2, "0")}`;
         hourMap.set(key, (hourMap.get(key) ?? 0) + pt.val);
       }
 
-      const start = new Date(minTs);
-      start.setMinutes(0, 0, 0);
-      const end = new Date(maxTs);
-      end.setMinutes(0, 0, 0);
-
-      const current = new Date(start);
-      while (current.getTime() <= end.getTime()) {
-        const iso = current.toISOString().slice(0, 13);
-        filled.push({ date: iso, [valueKey]: hourMap.get(iso) ?? 0 });
+      const current = new Date(rangeStart);
+      while (current.getTime() <= rangeEnd.getTime()) {
+        const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}T${String(current.getHours()).padStart(2, "0")}`;
+        filled.push({ date: key, [valueKey]: hourMap.get(key) ?? 0 });
         current.setHours(current.getHours() + 1);
       }
       break;
@@ -159,27 +208,18 @@ export function fillMissingPeriods(
       const weekMap = new Map<string, number>();
       for (const pt of valid) {
         const day = pt.date.getDay();
-        const diff = day === 0 ? -6 : 1 - day; // days back to Monday
+        const diff = day === 0 ? -6 : 1 - day;
         const monday = new Date(pt.date);
         monday.setDate(monday.getDate() + diff);
         monday.setHours(0, 0, 0, 0);
-        const key = monday.toISOString().split("T")[0]; // YYYY-MM-DD
+        const key = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
         weekMap.set(key, (weekMap.get(key) ?? 0) + pt.val);
       }
 
-      // Determine full Monday-aligned range
-      const start = new Date(minTs);
-      const startDay = start.getDay();
-      const startDiff = startDay === 0 ? -6 : 1 - startDay;
-      start.setDate(start.getDate() + startDiff);
-      start.setHours(0, 0, 0, 0);
-
-      const end = new Date(maxTs);
-
-      const current = new Date(start);
-      while (current.getTime() <= end.getTime()) {
-        const iso = current.toISOString().split("T")[0];
-        filled.push({ date: iso, [valueKey]: weekMap.get(iso) ?? 0 });
+      const current = new Date(rangeStart);
+      while (current.getTime() <= rangeEnd.getTime()) {
+        const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
+        filled.push({ date: key, [valueKey]: weekMap.get(key) ?? 0 });
         current.setDate(current.getDate() + 7);
       }
       break;
@@ -195,14 +235,8 @@ export function fillMissingPeriods(
         monthMap.set(key, (monthMap.get(key) ?? 0) + pt.val);
       }
 
-      // Determine full month-aligned range
-      const start = new Date(minTs);
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(maxTs);
-
-      const current = new Date(start);
-      while (current.getTime() <= end.getTime()) {
+      const current = new Date(rangeStart);
+      while (current.getTime() <= rangeEnd.getTime()) {
         const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
         filled.push({ date: key, [valueKey]: monthMap.get(key) ?? 0 });
         current.setMonth(current.getMonth() + 1);
@@ -212,17 +246,17 @@ export function fillMissingPeriods(
 
     // ── Daily (default: 7d / 30d) ──────────────────────────────────
     default: {
-      // Build a map keyed by YYYY-MM-DD
+      // Build a map keyed by YYYY-MM-DD (using local date parts for timezone safety)
       const dayMap = new Map<string, number>();
       for (const pt of valid) {
-        const key = pt.date.toISOString().split("T")[0];
+        const key = `${pt.date.getFullYear()}-${String(pt.date.getMonth() + 1).padStart(2, "0")}-${String(pt.date.getDate()).padStart(2, "0")}`;
         dayMap.set(key, (dayMap.get(key) ?? 0) + pt.val);
       }
 
-      const current = new Date(minTs);
-      while (current.getTime() <= maxTs) {
-        const iso = current.toISOString().split("T")[0];
-        filled.push({ date: iso, [valueKey]: dayMap.get(iso) ?? 0 });
+      const current = new Date(rangeStart);
+      while (current.getTime() <= rangeEnd.getTime()) {
+        const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`;
+        filled.push({ date: key, [valueKey]: dayMap.get(key) ?? 0 });
         current.setDate(current.getDate() + 1);
       }
       break;
