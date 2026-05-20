@@ -103,6 +103,8 @@ export default function RevenueChart() {
                 interval="preserveStartEnd"
               />
               <YAxis
+                type="number"
+                domain={[0, "auto"]}
                 tickFormatter={(v: number) =>
                   v >= 1_000_000
                     ? `${(v / 1_000_000).toFixed(1)}M`

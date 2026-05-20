@@ -103,6 +103,8 @@ export default function SignupsChart() {
                 interval="preserveStartEnd"
               />
               <YAxis
+                type="number"
+                domain={[0, "auto"]}
                 allowDecimals={false}
                 tick={{ fontSize: 12, fill: "#94a3b8" }}
                 tickLine={false}

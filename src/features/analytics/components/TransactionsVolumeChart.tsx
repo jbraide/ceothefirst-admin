@@ -139,6 +139,8 @@ export default function TransactionsVolumeChart() {
               />
               <YAxis
                 yAxisId="left"
+                type="number"
+                domain={[0, "auto"]}
                 allowDecimals={false}
                 tick={{ fontSize: 12, fill: "#3b82f6" }}
                 tickLine={false}
@@ -148,6 +150,8 @@ export default function TransactionsVolumeChart() {
               <YAxis
                 yAxisId="right"
                 orientation="right"
+                type="number"
+                domain={[0, "auto"]}
                 tickFormatter={(v: number) =>
                   v >= 1_000_000
                     ? `${(v / 1_000_000).toFixed(1)}M`
