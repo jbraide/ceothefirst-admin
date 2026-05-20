@@ -1,6 +1,6 @@
-# NairaFlow Admin Interface
+# CEOTHEFIRST Admin Interface
 
-Admin dashboard for the NairaFlow platform — manage businesses, review KYC verifications, monitor analytics, and send notifications.
+Admin dashboard for the CEOTHEFIRST platform — manage businesses, review KYC verifications, monitor analytics, and send notifications.
 
 ## Prerequisites
 

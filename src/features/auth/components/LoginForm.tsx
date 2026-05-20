@@ -71,7 +71,7 @@ export default function LoginForm() {
             NF
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
-            NairaFlow Admin
+            CEOTHEFIRST Admin
           </CardTitle>
           <CardDescription>Sign in to your admin dashboard</CardDescription>
         </CardHeader>

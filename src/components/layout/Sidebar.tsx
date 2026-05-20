@@ -107,7 +107,7 @@ export default function Sidebar() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold">
             NF
           </span>
-          NairaFlow
+          CEOTHEFIRST
         </NavLink>
 
         {/* Close button — mobile only */}
