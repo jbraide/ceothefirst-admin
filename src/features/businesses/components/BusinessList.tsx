@@ -217,6 +217,7 @@ export default function BusinessList() {
                       <TableHead>State</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>KYC</TableHead>
+                      <TableHead>Plan</TableHead>
                       <TableHead className="text-right">Transactions</TableHead>
                       <TableHead className="text-right">Created</TableHead>
                     </TableRow>
@@ -265,6 +266,13 @@ export default function BusinessList() {
                             {biz.verificationStatus}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          {biz.planName ? (
+                            <Badge variant="outline">{biz.planName}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           {biz._count.transactions.toLocaleString()}
                         </TableCell>
@@ -308,8 +316,8 @@ export default function BusinessList() {
             <div>
               <p className="text-sm">
                 This will permanently delete the following businesses and ALL
-                their data (transactions, products, staff, contacts, etc.).
-                This action cannot be undone.
+                their data (transactions, products, staff, contacts, etc.). This
+                action cannot be undone.
               </p>
               {selectedNames.length > 0 && (
                 <ul className="mt-2 max-h-40 overflow-y-auto rounded border p-2 text-sm">

@@ -14,6 +14,7 @@ import {
   Package,
   Users,
   Contact,
+  CreditCard,
   ShieldCheck,
   FileText,
   ExternalLink,
@@ -25,6 +26,8 @@ import { getBusinessDetail } from "../api/getBusinessDetail";
 import { updateBusinessStatus } from "../api/updateBusinessStatus";
 import { deleteBusiness } from "../api/deleteBusiness";
 import { businessKeys } from "../api/getBusinesses";
+import { getBusinessPlan } from "@/features/subscriptions/api/getBusinessPlan";
+import AssignPlanModal from "@/features/subscriptions/components/AssignPlanModal";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -95,6 +98,7 @@ export default function BusinessDetailView() {
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [planModalOpen, setPlanModalOpen] = useState(false);
 
   const {
     data: business,
@@ -105,6 +109,13 @@ export default function BusinessDetailView() {
     queryFn: () => getBusinessDetail(id!),
     enabled: !!id,
     staleTime: 30_000,
+  });
+
+  const { data: currentPlan, isLoading: planLoading } = useQuery({
+    queryKey: ["business-plan", id],
+    queryFn: () => getBusinessPlan(id!),
+    enabled: !!id,
+    staleTime: 60_000,
   });
 
   const statusMutation = useMutation({
@@ -286,6 +297,90 @@ export default function BusinessDetailView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ─── Subscription Plan ─── */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Subscription Plan
+          </CardTitle>
+          <Button size="sm" onClick={() => setPlanModalOpen(true)}>
+            Assign Plan
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {planLoading ? (
+            <div className="flex items-center gap-3 py-2">
+              <Spinner size={20} />
+              <span className="text-sm text-muted-foreground">
+                Loading plan...
+              </span>
+            </div>
+          ) : currentPlan ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Plan
+                </p>
+                <p className="font-semibold">
+                  {currentPlan.label} ({currentPlan.name})
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Price
+                </p>
+                <p className="font-semibold">
+                  ₦{Number(currentPlan.price).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Max Transactions
+                </p>
+                <p className="font-semibold">
+                  {currentPlan.maxTransactions === -1
+                    ? "Unlimited"
+                    : currentPlan.maxTransactions.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Max Products
+                </p>
+                <p className="font-semibold">
+                  {currentPlan.maxProducts === -1
+                    ? "Unlimited"
+                    : currentPlan.maxProducts.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Max Staff
+                </p>
+                <p className="font-semibold">
+                  {currentPlan.maxStaff === -1
+                    ? "Unlimited"
+                    : currentPlan.maxStaff.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Max Contacts
+                </p>
+                <p className="font-semibold">
+                  {currentPlan.maxContacts === -1
+                    ? "Unlimited"
+                    : currentPlan.maxContacts.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No plan assigned.</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* ─── Verification Documents ─── */}
       <Card>
@@ -469,6 +564,16 @@ export default function BusinessDetailView() {
           </div>
         </div>
       </Modal>
+
+      <AssignPlanModal
+        open={planModalOpen}
+        onClose={() => {
+          setPlanModalOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["business-plan", id] });
+        }}
+        businessId={business.id}
+        businessName={business.name}
+      />
     </div>
   );
 }

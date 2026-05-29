@@ -115,6 +115,7 @@ export interface BusinessListItem {
   isActive: boolean;
   verificationStatus: "PENDING" | "VERIFIED" | "REJECTED";
   createdAt: string;
+  planName?: string;
   _count: {
     transactions: number;
     products: number;
