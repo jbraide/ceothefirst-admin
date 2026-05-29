@@ -12,6 +12,7 @@ Welcome to the NairaFlow API documentation. This modular documentation is design
 - **[Invoices](./modules/invoices.md):** Professional billing and payment tracking.
 - **[Reports](./modules/reports.md):** Financial summaries and cash book log.
 - **[Staff](./modules/staff.md):** Employee management and restricted access.
+- **[Telegram](./modules/telegram.md):** Telegram bot integration for quick actions and notifications.
 - **[Admin](./modules/admin.md):** Platform-wide dashboard and business management.
 - **[Edge Cases](./modules/edge_cases.md):** Hidden safety mechanisms and race condition handling.
 

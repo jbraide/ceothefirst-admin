@@ -816,6 +816,7 @@ Deep-dive view of a single business including recent transaction history.
 ### Update Business Status (Suspend / Activate)
 
 **`PATCH /api/v1/admin/businesses/:id/status`**
+| `DELETE` | `/admin/businesses/:id` | Hard-delete business + all data | — | Super | `200` / `404` |
 
 Toggle a business's active state. Suspended businesses cannot perform operations (enforced elsewhere).
 
@@ -844,6 +845,31 @@ Returns the full updated `Business` object.
 - `action`: `"BUSINESS_STATUS_TOGGLE"`
 - `targetId`: The business ID
 - `details`: `"Set isActive to false"`
+
+**Status:** `200`
+**Error:** `404` if business not found
+
+---
+
+### Delete Business (Hard Delete)
+
+**`DELETE /api/v1/admin/businesses/:id`**
+
+Permanently deletes a business and all associated data. Runs in a single Prisma transaction in dependency order: reviews → bookings → properties → projects → invoices → debts → transactions → products → contacts → staff → leads → business.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "deleted": true,
+    "businessId": "cmny6abc0000...",
+    "businessName": "NairaFlow Demo Store"
+  }
+}
+```
+
+**Audit log:** `action: "BUSINESS_DELETED"`
 
 **Status:** `200`
 **Error:** `404` if business not found
@@ -1306,6 +1332,7 @@ Send a push notification to a specific business.
 | `GET` | `/admin/businesses` | List/search all businesses | `q`, `page`, `limit` | Super, Support | `200` |
 | `GET` | `/admin/businesses/:id` | Single business details | — | Super, Support | `200` / `404` |
 | `PATCH` | `/admin/businesses/:id/status` | Suspend/activate business | — | Super | `200` / `404` |
+| `DELETE` | `/admin/businesses/:id` | Hard-delete business + all data | — | Super | `200` / `404` |
 | `GET` | `/admin/verifications` | Pending KYC list | — | Super, Support | `200` |
 | `PATCH` | `/admin/businesses/:id/verify` | Approve/reject KYC | — | Super | `200` / `404` |
 | `GET` | `/admin/search/global?q=` | Cross-entity search | `q` | Super, Support | `200` / `400` |

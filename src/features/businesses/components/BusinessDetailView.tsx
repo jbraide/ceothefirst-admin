@@ -18,10 +18,12 @@ import {
   FileText,
   ExternalLink,
   AlertTriangle,
+  Trash2,
 } from "lucide-react";
 
 import { getBusinessDetail } from "../api/getBusinessDetail";
 import { updateBusinessStatus } from "../api/updateBusinessStatus";
+import { deleteBusiness } from "../api/deleteBusiness";
 import { businessKeys } from "../api/getBusinesses";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/Button";
@@ -92,6 +94,7 @@ export default function BusinessDetailView() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const {
     data: business,
@@ -113,6 +116,18 @@ export default function BusinessDetailView() {
       queryClient.invalidateQueries({ queryKey: businessKeys.detail(id!) });
       queryClient.invalidateQueries({ queryKey: businessKeys.lists() });
       setConfirmOpen(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteBusiness(id!),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: businessKeys.lists() });
+      console.log("Business deleted:", result.businessName);
+      navigate("/businesses");
+    },
+    onError: (err) => {
+      console.error("Failed to delete business:", err);
     },
   });
 
@@ -174,6 +189,20 @@ export default function BusinessDetailView() {
             : business.isActive
               ? "Suspend Business"
               : "Activate Business"}
+        </Button>
+        <Button
+          variant="destructive"
+          onClick={() => setDeleteConfirmOpen(true)}
+          disabled={deleteMutation.isPending}
+        >
+          {deleteMutation.isPending ? (
+            "Deleting..."
+          ) : (
+            <>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Business
+            </>
+          )}
         </Button>
       </div>
 
@@ -393,6 +422,49 @@ export default function BusinessDetailView() {
                 : business.isActive
                   ? "Yes, Suspend"
                   : "Yes, Activate"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ─── Delete Confirmation Modal ─── */}
+      <Modal
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+      >
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+              <Trash2 className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">Delete Business</h3>
+              <p className="text-sm text-muted-foreground">
+                This will permanently delete the business and ALL associated
+                data (transactions, products, staff, contacts, etc.). This
+                action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm">
+            Are you sure you want to delete <strong>{business.name}</strong>?
+          </p>
+
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirmOpen(false)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Yes, Delete"}
             </Button>
           </div>
         </div>

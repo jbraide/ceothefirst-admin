@@ -1,0 +1,1074 @@
+{
+  "version": "2.0.0",
+  "description": "NairaFlow multi-vertical MVP — module manifest for frontend consumption",
+
+  "plans": {
+    "starter": {
+      "label": "Starter",
+      "price": 0,
+      "description": "For solo operators getting started",
+      "limits": {
+        "transactions": 100,
+        "products": 20,
+        "staff": 1,
+        "contacts": 50,
+        "projects": 0,
+        "properties": 0,
+        "invoicePDFs": 10
+      }
+    },
+    "growth": {
+      "label": "Growth",
+      "price": 5000,
+      "description": "For growing businesses ready to scale",
+      "limits": {
+        "transactions": 1000,
+        "products": 200,
+        "staff": 5,
+        "contacts": 500,
+        "projects": 20,
+        "properties": 5,
+        "invoicePDFs": 50
+      }
+    },
+    "premium": {
+      "label": "Premium",
+      "price": 15000,
+      "description": "For established businesses that need everything",
+      "limits": {
+        "transactions": -1,
+        "products": -1,
+        "staff": -1,
+        "contacts": -1,
+        "projects": -1,
+        "properties": -1,
+        "invoicePDFs": -1
+      }
+    }
+  },
+
+  "features": {
+    "auth": { "name": "Authentication", "plan": "starter", "category": "core" },
+    "business_profile": {
+      "name": "Business Profile",
+      "plan": "starter",
+      "category": "core"
+    },
+    "contacts": { "name": "Contacts", "plan": "starter", "category": "core" },
+    "transactions": {
+      "name": "Basic Transactions",
+      "plan": "starter",
+      "category": "core"
+    },
+    "quick_sale": {
+      "name": "Quick Sale / POS",
+      "plan": "starter",
+      "category": "core"
+    },
+    "debts": { "name": "Debt Tracking", "plan": "starter", "category": "core" },
+    "invoices": { "name": "Invoicing", "plan": "starter", "category": "core" },
+    "basic_reports": {
+      "name": "Basic Reports",
+      "plan": "starter",
+      "category": "core"
+    },
+    "staff_1": {
+      "name": "1 Staff Member",
+      "plan": "starter",
+      "category": "core"
+    },
+    "inventory": {
+      "name": "Inventory Management",
+      "plan": "growth",
+      "category": "retail"
+    },
+    "stock_tracking": {
+      "name": "Stock Tracking",
+      "plan": "growth",
+      "category": "retail"
+    },
+    "sales_channels": {
+      "name": "Sales Channels",
+      "plan": "growth",
+      "category": "retail"
+    },
+    "discounts": {
+      "name": "Discounts",
+      "plan": "growth",
+      "category": "retail"
+    },
+    "expense_receipts": {
+      "name": "Expense Receipts",
+      "plan": "growth",
+      "category": "retail"
+    },
+    "expense_approval": {
+      "name": "Expense Approval",
+      "plan": "growth",
+      "category": "retail"
+    },
+    "leads": {
+      "name": "Lead Management",
+      "plan": "growth",
+      "category": "growth"
+    },
+    "advanced_reports": {
+      "name": "Advanced Reports",
+      "plan": "growth",
+      "category": "growth"
+    },
+    "staff_multi": {
+      "name": "Multi Staff",
+      "plan": "growth",
+      "category": "growth"
+    },
+    "recurring_invoices": {
+      "name": "Recurring Invoices",
+      "plan": "premium",
+      "category": "growth"
+    },
+    "projects": {
+      "name": "Project Management",
+      "plan": "growth",
+      "category": "freelancer"
+    },
+    "project_tasks": {
+      "name": "Project Tasks",
+      "plan": "premium",
+      "category": "freelancer"
+    },
+    "service_catalog": {
+      "name": "Service Catalog",
+      "plan": "growth",
+      "category": "freelancer"
+    },
+    "properties": {
+      "name": "Property Management",
+      "plan": "growth",
+      "category": "shortlet"
+    },
+    "bookings": {
+      "name": "Booking Management",
+      "plan": "growth",
+      "category": "shortlet"
+    },
+    "booking_calendar": {
+      "name": "Booking Calendar",
+      "plan": "premium",
+      "category": "shortlet"
+    },
+    "maintenance": {
+      "name": "Maintenance Tracking",
+      "plan": "premium",
+      "category": "shortlet"
+    },
+    "reviews": {
+      "name": "Guest Reviews",
+      "plan": "premium",
+      "category": "shortlet"
+    },
+    "multi_currency": {
+      "name": "Multi-Currency",
+      "plan": "premium",
+      "category": "premium"
+    },
+    "product_variants": {
+      "name": "Product Variants",
+      "plan": "premium",
+      "category": "premium"
+    },
+    "serial_tracking": {
+      "name": "Serial / IMEI Tracking",
+      "plan": "premium",
+      "category": "premium"
+    },
+    "delivery_mgmt": {
+      "name": "Delivery Management",
+      "plan": "premium",
+      "category": "premium"
+    },
+    "priority_support": {
+      "name": "Priority Support",
+      "plan": "premium",
+      "category": "premium"
+    },
+    "api_access": {
+      "name": "API Access",
+      "plan": "premium",
+      "category": "premium"
+    },
+    "custom_reports": {
+      "name": "Custom Reports",
+      "plan": "premium",
+      "category": "premium"
+    }
+  },
+
+  "modules": {
+    "auth": {
+      "name": "Authentication",
+      "description": "Sign up, login, PIN reset, token management",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["auth"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/auth/register",
+          "feature": "auth",
+          "description": "Register a new business"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "feature": "auth",
+          "description": "Login with phone + PIN"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/token/refresh",
+          "feature": "auth",
+          "description": "Refresh access token"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/pin/reset-request",
+          "feature": "auth",
+          "description": "Request PIN reset OTP"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/pin/reset-confirm",
+          "feature": "auth",
+          "description": "Confirm PIN reset"
+        },
+        {
+          "method": "POST",
+          "path": "/auth/staff/login",
+          "feature": "auth",
+          "description": "Staff member login"
+        }
+      ]
+    },
+    "business": {
+      "name": "Business Profile",
+      "description": "Business details, bank info, daily reminders, plan management",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["business_profile"],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/business/profile",
+          "feature": "business_profile",
+          "description": "Get business profile with plan details (name, label, price, limits)"
+        },
+        {
+          "method": "PATCH",
+          "path": "/business/profile",
+          "feature": "business_profile",
+          "description": "Update profile — ownerName, address, category, state, city, bankName, accountNumber, reminderTime"
+        },
+        {
+          "method": "PATCH",
+          "path": "/business/reminder-time",
+          "feature": "business_profile",
+          "description": "Set daily bookkeeping reminder"
+        },
+        {
+          "method": "POST",
+          "path": "/business/bank/validate",
+          "feature": "business_profile",
+          "description": "Validate NUBAN account"
+        }
+      ]
+    },
+    "contacts": {
+      "name": "Contacts",
+      "description": "Customers, suppliers, clients, guests — with source and status tracking",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["contacts"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/contacts",
+          "feature": "contacts",
+          "description": "Create contact (supports source, contactStatus)"
+        },
+        {
+          "method": "GET",
+          "path": "/contacts?type=CUSTOMER",
+          "feature": "contacts",
+          "description": "List contacts by type"
+        },
+        {
+          "method": "GET",
+          "path": "/contacts/:id",
+          "feature": "contacts",
+          "description": "Get contact with balance + history"
+        },
+        {
+          "method": "GET",
+          "path": "/contacts/:id/transactions",
+          "feature": "contacts",
+          "description": "Contact transaction history"
+        },
+        {
+          "method": "PATCH",
+          "path": "/contacts/:id",
+          "feature": "contacts",
+          "description": "Update contact"
+        },
+        {
+          "method": "DELETE",
+          "path": "/contacts/:id",
+          "feature": "contacts",
+          "description": "Delete contact (if no history)"
+        }
+      ]
+    },
+    "transactions": {
+      "name": "Transactions",
+      "description": "Sales, purchases, expenses — inventory-linked and quick-sale modes",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["transactions"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/transactions/sell",
+          "feature": "transactions",
+          "description": "Record inventory sale (decrements stock)"
+        },
+        {
+          "method": "POST",
+          "path": "/transactions/quick-sell",
+          "feature": "quick_sale",
+          "description": "Fast sale — no product required"
+        },
+        {
+          "method": "POST",
+          "path": "/transactions/buy",
+          "feature": "transactions",
+          "description": "Record purchase (increments stock)"
+        },
+        {
+          "method": "POST",
+          "path": "/transactions/expense",
+          "feature": "transactions",
+          "description": "Record expense with category"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions",
+          "feature": "transactions",
+          "description": "List transactions (filter by type, contact, date)"
+        },
+        {
+          "method": "GET",
+          "path": "/transactions/:id",
+          "feature": "transactions",
+          "description": "Get single transaction with line items"
+        }
+      ],
+      "notes": "salesChannel and discount fields available on sell/quick-sell. expenseStatus and receiptLink on expenses."
+    },
+    "inventory": {
+      "name": "Inventory",
+      "description": "Products, categories, stock levels, low-stock alerts",
+      "businessTypes": ["product", "both"],
+      "features": ["inventory"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/inventory/categories",
+          "feature": "inventory",
+          "description": "Create category"
+        },
+        {
+          "method": "GET",
+          "path": "/inventory/categories",
+          "feature": "inventory",
+          "description": "List categories"
+        },
+        {
+          "method": "PATCH",
+          "path": "/inventory/categories/:id",
+          "feature": "inventory",
+          "description": "Update category"
+        },
+        {
+          "method": "DELETE",
+          "path": "/inventory/categories/:id",
+          "feature": "inventory",
+          "description": "Delete category (if empty)"
+        },
+        {
+          "method": "POST",
+          "path": "/inventory/products",
+          "feature": "inventory",
+          "description": "Create product (supports trackStock, status, deliveryTimeline)"
+        },
+        {
+          "method": "GET",
+          "path": "/inventory/products",
+          "feature": "inventory",
+          "description": "List products (filter by categoryId, search)"
+        },
+        {
+          "method": "GET",
+          "path": "/inventory/products/:id",
+          "feature": "inventory",
+          "description": "Get product with isLowStock flag"
+        },
+        {
+          "method": "PATCH",
+          "path": "/inventory/products/:id",
+          "feature": "inventory",
+          "description": "Update product"
+        },
+        {
+          "method": "DELETE",
+          "path": "/inventory/products/:id",
+          "feature": "inventory",
+          "description": "Delete product"
+        },
+        {
+          "method": "PATCH",
+          "path": "/inventory/products/:id/adjust-stock",
+          "feature": "stock_tracking",
+          "description": "Manual stock adjustment (damage, theft, correction)"
+        }
+      ]
+    },
+    "debts": {
+      "name": "Debts",
+      "description": "Receivables (money owed to you) and payables (money you owe)",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["debts"],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/debts",
+          "feature": "debts",
+          "description": "List debts (filter by type, status, contactId)"
+        },
+        {
+          "method": "GET",
+          "path": "/debts/summary",
+          "feature": "debts",
+          "description": "Debt summary — total receivable/payable/net"
+        },
+        {
+          "method": "GET",
+          "path": "/debts/:id",
+          "feature": "debts",
+          "description": "Get single debt record"
+        },
+        {
+          "method": "POST",
+          "path": "/debts/:id/pay",
+          "feature": "debts",
+          "description": "Record repayment — updates status, creates transaction"
+        }
+      ]
+    },
+    "invoices": {
+      "name": "Invoices",
+      "description": "Formal numbered invoices with payments, PDF export, and recurring support",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["invoices"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/invoices",
+          "feature": "invoices",
+          "description": "Create invoice (supports projectId, isRecurring)"
+        },
+        {
+          "method": "POST",
+          "path": "/invoices/recurring",
+          "feature": "recurring_invoices",
+          "description": "Create recurring invoice"
+        },
+        {
+          "method": "POST",
+          "path": "/invoices/recurring/generate",
+          "feature": "recurring_invoices",
+          "description": "Generate due recurring invoices (admin/cron)"
+        },
+        {
+          "method": "GET",
+          "path": "/invoices",
+          "feature": "invoices",
+          "description": "List invoices (filter by status, contactId)"
+        },
+        {
+          "method": "GET",
+          "path": "/invoices/:id",
+          "feature": "invoices",
+          "description": "Get invoice with line items"
+        },
+        {
+          "method": "POST",
+          "path": "/invoices/:id/pay",
+          "feature": "invoices",
+          "description": "Record payment — updates status, creates transaction"
+        },
+        {
+          "method": "GET",
+          "path": "/invoices/:id/pdf",
+          "feature": "invoices",
+          "description": "Download invoice PDF"
+        },
+        {
+          "method": "DELETE",
+          "path": "/invoices/:id",
+          "feature": "invoices",
+          "description": "Cancel invoice (only if unpaid)"
+        },
+        {
+          "method": "PATCH",
+          "path": "/invoices/:id",
+          "feature": "invoices",
+          "description": "Update invoice (only if not paid/void)"
+        }
+      ]
+    },
+    "reports": {
+      "name": "Reports",
+      "description": "Dashboard, cash book, period summaries, daily summary, all-time aggregates",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["basic_reports"],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/reports/dashboard",
+          "feature": "basic_reports",
+          "description": "Dashboard — today's money in/out, debt overview, low stock, recent tx"
+        },
+        {
+          "method": "GET",
+          "path": "/reports/daily-summary",
+          "feature": "basic_reports",
+          "description": "Daily summary — sales, expenses, new customers, leads, bookings, projects"
+        },
+        {
+          "method": "GET",
+          "path": "/reports/cash-book",
+          "feature": "basic_reports",
+          "description": "Cash book — full transaction log (paginated, filterable)"
+        },
+        {
+          "method": "GET",
+          "path": "/reports/summary",
+          "feature": "advanced_reports",
+          "description": "Period summary — money in/out for date range"
+        },
+        {
+          "method": "GET",
+          "path": "/reports/all-time",
+          "feature": "advanced_reports",
+          "description": "All-time totals — lifetime sales, purchases, repayments"
+        }
+      ],
+      "notes": "Only business owner can access reports. Staff members are blocked."
+    },
+    "staff": {
+      "name": "Staff Management",
+      "description": "Add employees with limited access — no financial reports, no cost prices",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["staff_1"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/staff",
+          "feature": "staff_1",
+          "description": "Add staff member (owner only)"
+        },
+        {
+          "method": "GET",
+          "path": "/staff",
+          "feature": "staff_1",
+          "description": "List staff"
+        },
+        {
+          "method": "GET",
+          "path": "/staff/:id",
+          "feature": "staff_1",
+          "description": "Get staff details"
+        },
+        {
+          "method": "PATCH",
+          "path": "/staff/:id",
+          "feature": "staff_1",
+          "description": "Update staff (or deactivate via isActive)"
+        },
+        {
+          "method": "DELETE",
+          "path": "/staff/:id",
+          "feature": "staff_1",
+          "description": "Deactivate/delete staff"
+        },
+        {
+          "method": "POST",
+          "path": "/staff/:id/reset-pin",
+          "feature": "staff_1",
+          "description": "Reset staff PIN (owner only)"
+        }
+      ]
+    },
+    "leads": {
+      "name": "Lead Management",
+      "description": "Track inquiries, follow-ups, and conversion to contacts",
+      "businessTypes": ["product", "service", "both"],
+      "features": ["leads"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/leads",
+          "feature": "leads",
+          "description": "Create lead (name, phone, source, interest, notes)"
+        },
+        {
+          "method": "GET",
+          "path": "/leads",
+          "feature": "leads",
+          "description": "List leads (filter by status)"
+        },
+        {
+          "method": "GET",
+          "path": "/leads/:id",
+          "feature": "leads",
+          "description": "Get lead details"
+        },
+        {
+          "method": "PATCH",
+          "path": "/leads/:id",
+          "feature": "leads",
+          "description": "Update lead (status, followUpDate, convert to contact)"
+        },
+        {
+          "method": "DELETE",
+          "path": "/leads/:id",
+          "feature": "leads",
+          "description": "Delete lead"
+        }
+      ]
+    },
+    "projects": {
+      "name": "Project Management",
+      "description": "Client projects with milestones, payment tracking, deadlines",
+      "businessTypes": ["service", "both"],
+      "features": ["projects"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/projects",
+          "feature": "projects",
+          "description": "Create project (clientId, serviceId optional, amount, deadlines)"
+        },
+        {
+          "method": "GET",
+          "path": "/projects",
+          "feature": "projects",
+          "description": "List projects (filter by status, clientId)"
+        },
+        {
+          "method": "GET",
+          "path": "/projects/:id",
+          "feature": "projects",
+          "description": "Get project with tasks, client, service"
+        },
+        {
+          "method": "PATCH",
+          "path": "/projects/:id",
+          "feature": "projects",
+          "description": "Update project (status, payment, deadlines)"
+        },
+        {
+          "method": "DELETE",
+          "path": "/projects/:id",
+          "feature": "projects",
+          "description": "Delete project"
+        }
+      ]
+    },
+    "properties": {
+      "name": "Property Management",
+      "description": "Apartments and shortlet units with rates, room counts, availability",
+      "businessTypes": ["both"],
+      "features": ["properties"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/properties",
+          "feature": "properties",
+          "description": "Create property (name, type, rooms, rates, cleaningFee)"
+        },
+        {
+          "method": "GET",
+          "path": "/properties",
+          "feature": "properties",
+          "description": "List properties (filter by status)"
+        },
+        {
+          "method": "GET",
+          "path": "/properties/:id",
+          "feature": "properties",
+          "description": "Get property with recent bookings"
+        },
+        {
+          "method": "PATCH",
+          "path": "/properties/:id",
+          "feature": "properties",
+          "description": "Update property"
+        },
+        {
+          "method": "DELETE",
+          "path": "/properties/:id",
+          "feature": "properties",
+          "description": "Delete property"
+        }
+      ]
+    },
+    "bookings": {
+      "name": "Booking Management",
+      "description": "Date-based reservations — overlap detection, date validation, cancellation",
+      "businessTypes": ["both"],
+      "features": ["bookings"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/bookings",
+          "feature": "bookings",
+          "description": "Create booking (overlap + date validation enforced)"
+        },
+        {
+          "method": "GET",
+          "path": "/bookings",
+          "feature": "bookings",
+          "description": "List bookings (filter by status, propertyId, date range)"
+        },
+        {
+          "method": "GET",
+          "path": "/bookings/:id",
+          "feature": "bookings",
+          "description": "Get booking with property + guest"
+        },
+        {
+          "method": "PATCH",
+          "path": "/bookings/:id",
+          "feature": "bookings",
+          "description": "Update booking (date validation, supports paymentMethod — creates transaction on payment)"
+        },
+        {
+          "method": "POST",
+          "path": "/bookings/:id/cancel",
+          "feature": "bookings",
+          "description": "Cancel booking — restores property to available if no remaining bookings"
+        },
+        {
+          "method": "DELETE",
+          "path": "/bookings/:id",
+          "feature": "bookings",
+          "description": "Delete booking (cleans up associated reviews first)"
+        }
+      ],
+      "edgeCases": [
+        "Overlap detection: blocks bookings that overlap existing non-cancelled bookings on the same property",
+        "Date validation: checkOut must be after checkIn",
+        "Maintenance block: cannot book a property with status 'maintenance'",
+        "Auto-occupied: property status set to 'occupied' on booking creation",
+        "Cancel restore: property set back to 'available' if no remaining bookings"
+      ]
+    },
+    "maintenance": {
+      "name": "Maintenance Tracking",
+      "description": "Property issue reporting, vendor assignment, cost tracking",
+      "businessTypes": ["both"],
+      "features": ["maintenance"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/maintenance",
+          "feature": "maintenance",
+          "description": "Log maintenance issue (propertyId, issue, assignedTo, cost)"
+        },
+        {
+          "method": "GET",
+          "path": "/maintenance",
+          "feature": "maintenance",
+          "description": "List issues (filter by propertyId, status)"
+        },
+        {
+          "method": "GET",
+          "path": "/maintenance/:id",
+          "feature": "maintenance",
+          "description": "Get issue details with property info"
+        },
+        {
+          "method": "PATCH",
+          "path": "/maintenance/:id",
+          "feature": "maintenance",
+          "description": "Update issue (status, resolutionDate, cost)"
+        },
+        {
+          "method": "DELETE",
+          "path": "/maintenance/:id",
+          "feature": "maintenance",
+          "description": "Delete issue record"
+        }
+      ]
+    },
+    "reviews": {
+      "name": "Guest Reviews",
+      "description": "Guest ratings (1–5) and feedback tied to bookings",
+      "businessTypes": ["both"],
+      "features": ["reviews"],
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/reviews",
+          "feature": "reviews",
+          "description": "Submit review (bookingId, guestId, rating 1-5, comment, platform)"
+        },
+        {
+          "method": "GET",
+          "path": "/reviews",
+          "feature": "reviews",
+          "description": "List reviews (filter by bookingId, platform)"
+        },
+        {
+          "method": "GET",
+          "path": "/reviews/:id",
+          "feature": "reviews",
+          "description": "Get review with booking + property + guest"
+        },
+        {
+          "method": "PATCH",
+          "path": "/reviews/:id",
+          "feature": "reviews",
+          "description": "Update review"
+        },
+        {
+          "method": "DELETE",
+          "path": "/reviews/:id",
+          "feature": "reviews",
+          "description": "Delete review"
+        }
+      ]
+    },
+    "admin": {
+      "name": "Admin Panel",
+      "description": "Platform management — businesses, plans, features, analytics, notifications",
+      "businessTypes": [],
+      "features": [],
+      "access": "SUPER_ADMIN, SUPPORT_ADMIN, ANALYST (role-dependent)",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/admin/stats",
+          "description": "Global platform statistics"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/businesses",
+          "description": "List all businesses"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/businesses/:id",
+          "description": "Business details"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/businesses/:id/status",
+          "description": "Suspend/activate business"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/businesses/:id/verify",
+          "description": "Approve/reject verification"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/businesses/:id/plan",
+          "description": "Get business plan"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/businesses/:id/plan",
+          "description": "Assign/change plan"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/businesses/by-plan/:name",
+          "description": "Filter businesses by plan"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/plans",
+          "description": "List subscription plans"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/plans/:id",
+          "description": "Get plan with features"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/plans",
+          "description": "Create plan"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/plans/:id",
+          "description": "Update plan"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/plans/:id",
+          "description": "Deactivate plan"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/plans/:id/features",
+          "description": "Get plan features"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/plans/:planId/features/:featureId",
+          "description": "Toggle feature on/off for plan"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/features",
+          "description": "List all features"
+        },
+        {
+          "method": "POST",
+          "path": "/admin/features",
+          "description": "Create feature"
+        },
+        {
+          "method": "PATCH",
+          "path": "/admin/features/:id",
+          "description": "Update feature"
+        },
+        {
+          "method": "DELETE",
+          "path": "/admin/features/:id",
+          "description": "Delete feature"
+        },
+        {
+          "method": "GET",
+          "path": "/admin/analytics/*",
+          "description": "Revenue growth, top businesses, categories, signups, verification, active users, feature adoption, platform debt, ARPU, transaction volume, revenue by category, period comparison"
+        }
+      ]
+    }
+  },
+
+  "businessClasses": {
+    "retail": {
+      "label": "Product Seller",
+      "category": "Retail",
+      "examples": "Gadgets, fashion, perfume, mini-importers, Instagram vendors",
+      "modules": [
+        "auth",
+        "business",
+        "contacts",
+        "transactions",
+        "inventory",
+        "debts",
+        "invoices",
+        "reports",
+        "staff",
+        "leads"
+      ],
+      "primaryFeatures": [
+        "inventory",
+        "stock_tracking",
+        "sales_channels",
+        "discounts"
+      ],
+      "guide": "retail-guide.md"
+    },
+    "crypto": {
+      "label": "Crypto / Financial",
+      "category": "Financial Services",
+      "examples": "P2P traders, USDT merchants, FX operators",
+      "modules": [
+        "auth",
+        "business",
+        "contacts",
+        "transactions",
+        "debts",
+        "reports",
+        "leads"
+      ],
+      "primaryFeatures": ["quick_sale"],
+      "guide": "crypto-guide.md"
+    },
+    "shortlet": {
+      "label": "Shortlet / Hospitality",
+      "category": "Hospitality",
+      "examples": "Apartment rentals, short-stay operators, guest houses",
+      "modules": [
+        "auth",
+        "business",
+        "contacts",
+        "properties",
+        "bookings",
+        "maintenance",
+        "reviews",
+        "transactions",
+        "invoices",
+        "reports"
+      ],
+      "primaryFeatures": [
+        "properties",
+        "bookings",
+        "booking_calendar",
+        "maintenance",
+        "reviews"
+      ],
+      "guide": "shortlet-guide.md"
+    },
+    "freelancer": {
+      "label": "Freelancer / Agency",
+      "category": "Creative Agency",
+      "examples": "Marketing agencies, consultants, creative agencies, logistics operators",
+      "modules": [
+        "auth",
+        "business",
+        "contacts",
+        "transactions",
+        "invoices",
+        "projects",
+        "reports",
+        "leads"
+      ],
+      "primaryFeatures": [
+        "projects",
+        "project_tasks",
+        "service_catalog",
+        "recurring_invoices"
+      ],
+      "guide": "freelancer-guide.md"
+    },
+    "food": {
+      "label": "Food & Delivery",
+      "category": "Food & Drinks",
+      "examples": "Cloud kitchens, food vendors, frozen food suppliers, restaurants",
+      "modules": [
+        "auth",
+        "business",
+        "contacts",
+        "transactions",
+        "inventory",
+        "reports"
+      ],
+      "primaryFeatures": ["quick_sale", "inventory"],
+      "guide": "food-guide.md"
+    }
+  }
+}

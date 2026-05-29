@@ -154,6 +154,11 @@ export interface UpdateBusinessStatusRequest {
   isActive: boolean;
 }
 
+export interface DeleteBusinessResponse {
+  businessName: string;
+  businessId: string;
+}
+
 // ─── Verifications ──────────────────────────────────────────────────
 
 export interface PendingVerification {
@@ -317,4 +322,72 @@ export interface TargetedNotificationRequest {
 
 export interface TargetedNotificationResponse {
   success: boolean;
+}
+
+// ─── Subscriptions & Plans ──────────────────────────────────────────
+
+export interface PlanFeature {
+  feature: {
+    key: string;
+    name: string;
+    category: string;
+  };
+  isEnabled: boolean;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  label: string;
+  price: string;
+  maxTransactions: number;
+  maxProducts: number;
+  maxStaff: number;
+  maxContacts: number;
+  maxProjects: number;
+  maxProperties: number;
+  maxInvoicePDFs: number;
+  features: PlanFeature[];
+}
+
+export interface CreatePlanRequest {
+  name: string;
+  label: string;
+  price: string;
+  maxTransactions?: number;
+  maxProducts?: number;
+  maxStaff?: number;
+  maxContacts?: number;
+  maxProjects?: number;
+  maxProperties?: number;
+  maxInvoicePDFs?: number;
+}
+
+export interface FeatureFlag {
+  id: string;
+  key: string;
+  name: string;
+  category: string;
+  description?: string;
+}
+
+export interface ToggleFeatureRequest {
+  isEnabled: boolean;
+}
+
+export interface AssignPlanRequest {
+  planId: string;
+}
+
+export interface AssignPlanResponse {
+  businessId: string;
+  businessName: string;
+  plan: string;
+  message: string;
+}
+
+export interface DeleteBusinessResponse {
+  deleted: boolean;
+  businessId: string;
+  businessName: string;
 }

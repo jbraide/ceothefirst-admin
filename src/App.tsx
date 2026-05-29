@@ -11,6 +11,7 @@ import SearchPage from "@/pages/SearchPage";
 import AuditLogsPage from "@/pages/AuditLogsPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import AdminManagementPage from "@/pages/AdminManagementPage";
+import SubscriptionsPage from "@/pages/SubscriptionsPage";
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="audit" element={<AuditLogsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="admins" element={<AdminManagementPage />} />
+          <Route path="subscriptions" element={<SubscriptionsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
