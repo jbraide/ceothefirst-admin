@@ -111,6 +111,11 @@ export default function PlansList({ onEdit, onViewFeatures }: PlansListProps) {
         })}`;
   };
 
+  const planLimit = (val: number | undefined): string => {
+    const v = val ?? 0;
+    return v === -1 ? "Unlimited" : v.toLocaleString();
+  };
+
   return (
     <>
       <Card>
@@ -137,9 +142,9 @@ export default function PlansList({ onEdit, onViewFeatures }: PlansListProps) {
                   <TableCell className="font-medium">{plan.name}</TableCell>
                   <TableCell>{plan.label}</TableCell>
                   <TableCell>{formatNaira(plan.price)}</TableCell>
-                  <TableCell>{plan.maxTransactions}</TableCell>
-                  <TableCell>{plan.maxProducts}</TableCell>
-                  <TableCell>{plan.maxStaff}</TableCell>
+                  <TableCell>{planLimit(plan.maxTransactions)}</TableCell>
+                  <TableCell>{planLimit(plan.maxProducts)}</TableCell>
+                  <TableCell>{planLimit(plan.maxStaff)}</TableCell>
                   <TableCell>
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
                       Active
