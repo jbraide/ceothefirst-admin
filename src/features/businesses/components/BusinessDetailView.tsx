@@ -111,11 +111,16 @@ export default function BusinessDetailView() {
     staleTime: 30_000,
   });
 
-  const { data: currentPlan, isLoading: planLoading } = useQuery({
+  const {
+    data: currentPlan,
+    isLoading: planLoading,
+    isError: planError,
+  } = useQuery({
     queryKey: ["business-plan", id],
     queryFn: () => getBusinessPlan(id!),
     enabled: !!id,
     staleTime: 60_000,
+    retry: false,
   });
 
   const statusMutation = useMutation({
@@ -317,6 +322,8 @@ export default function BusinessDetailView() {
                 Loading plan...
               </span>
             </div>
+          ) : planError ? (
+            <p className="text-sm text-red-600">Failed to load plan.</p>
           ) : currentPlan ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>

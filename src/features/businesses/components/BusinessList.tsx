@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Trash2, AlertTriangle } from "lucide-react";
+import { Search, Trash2, AlertTriangle, X } from "lucide-react";
 
 import {
   getBusinesses,
   businessKeys,
   type GetBusinessesParams,
 } from "../api/getBusinesses";
+import { getBusinessesByPlan } from "@/features/subscriptions/api/getBusinessesByPlan";
 import { deleteBusiness } from "../api/deleteBusiness";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "@/components/ui/Input";
@@ -43,6 +44,7 @@ function formatDate(dateString: string): string {
 
 export default function BusinessList() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -53,18 +55,44 @@ export default function BusinessList() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  const planFilter = searchParams.get("plan") || "";
+
   const queryParams: GetBusinessesParams = {
     page,
     limit: 15,
     ...(debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {}),
   };
 
-  const { data, isLoading, isError } = useQuery({
+  // Plan-filtered query
+  const {
+    data: planData,
+    isLoading: planLoading,
+    isError: planError,
+  } = useQuery({
+    queryKey: ["businesses-by-plan", planFilter],
+    queryFn: () => getBusinessesByPlan(planFilter),
+    enabled: !!planFilter,
+    staleTime: 30_000,
+  });
+
+  // Normal query (when no plan filter)
+  const {
+    data: normalData,
+    isLoading: normalLoading,
+    isError: normalError,
+  } = useQuery({
     queryKey: businessKeys.list(queryParams),
     queryFn: () => getBusinesses(queryParams),
     placeholderData: (prev) => prev,
     staleTime: 30_000,
+    enabled: !planFilter,
   });
+
+  const clearPlanFilter = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("plan");
+    setSearchParams(next, { replace: true });
+  };
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -72,8 +100,12 @@ export default function BusinessList() {
     setSelectedIds(new Set());
   };
 
-  const businesses = data?.results ?? [];
-  const meta = data?.meta;
+  const businesses = planFilter
+    ? (planData ?? [])
+    : (normalData?.results ?? []);
+  const meta = planFilter ? undefined : normalData?.meta;
+  const isLoading = planFilter ? planLoading : normalLoading;
+  const isError = planFilter ? planError : normalError;
 
   const allVisibleSelected =
     businesses.length > 0 && businesses.every((b) => selectedIds.has(b.id));
@@ -154,6 +186,24 @@ export default function BusinessList() {
           </div>
         </div>
       </div>
+
+      {planFilter && (
+        <div className="flex items-center gap-3 rounded-lg border bg-blue-50 px-4 py-3 text-sm">
+          <span className="text-blue-800">
+            Showing businesses on the{" "}
+            <span className="font-semibold">{planFilter}</span> plan
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearPlanFilter}
+            className="ml-auto"
+          >
+            <X className="h-4 w-4" />
+            Clear filter
+          </Button>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

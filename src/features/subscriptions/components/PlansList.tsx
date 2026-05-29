@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Trash2, Settings } from "lucide-react";
+import { Pencil, Trash2, Settings, Users } from "lucide-react";
 
 import { getPlans, planKeys } from "../api/getPlans";
 import { deletePlan } from "../api/deletePlan";
@@ -27,6 +28,7 @@ export interface PlansListProps {
 }
 
 export default function PlansList({ onEdit, onViewFeatures }: PlansListProps) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [toast, setToast] = useState<{
@@ -34,7 +36,11 @@ export default function PlansList({ onEdit, onViewFeatures }: PlansListProps) {
     type: ToastType;
   } | null>(null);
 
-  const { data: plans, isLoading, isError } = useQuery({
+  const {
+    data: plans,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: planKeys.lists(),
     queryFn: getPlans,
   });
@@ -156,6 +162,16 @@ export default function PlansList({ onEdit, onViewFeatures }: PlansListProps) {
                         aria-label={`Features for ${plan.name}`}
                       >
                         <Settings className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          navigate(`/businesses?plan=${plan.name}`)
+                        }
+                        aria-label={`View businesses on ${plan.name}`}
+                      >
+                        <Users className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
