@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Trash2, AlertTriangle, X } from "lucide-react";
 
@@ -44,7 +44,7 @@ function formatDate(dateString: string): string {
 
 export default function BusinessList() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -55,7 +55,7 @@ export default function BusinessList() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const planFilter = searchParams.get("plan") || "";
+  const planFilter = new URLSearchParams(location.search).get("plan") || "";
 
   const queryParams: GetBusinessesParams = {
     page,
@@ -89,9 +89,7 @@ export default function BusinessList() {
   });
 
   const clearPlanFilter = () => {
-    const next = new URLSearchParams(searchParams);
-    next.delete("plan");
-    setSearchParams(next, { replace: true });
+    navigate("/businesses", { replace: true });
   };
 
   const handleSearchChange = (value: string) => {
