@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   getSubscriptionBusinesses,
@@ -21,14 +21,19 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Select";
+import AssignPlanModal from "@/features/subscriptions/components/AssignPlanModal";
+import { Pencil } from "lucide-react";
 
 const ITEMS_PER_PAGE = 20;
 
 export default function SubscribedBusinessesList() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [planFilter, setPlanFilter] = useState<string>("");
   const [activeFilter, setActiveFilter] = useState<string>("");
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assigningBusiness, setAssigningBusiness] = useState<{ id: string; name: string } | null>(null);
 
   // ── Fetch plans for the filter dropdown ──
   const { data: plans } = useQuery({
@@ -79,13 +84,12 @@ export default function SubscribedBusinessesList() {
 
     return (
       <div className="flex flex-col gap-0.5">
-        <Badge
-          variant={expired ? "destructive" : "success"}
-          size="sm"
-        >
+        <Badge variant={expired ? "destructive" : "success"} size="sm">
           {expired ? "Expired" : "Active"}
         </Badge>
-        <span className="text-xs text-gray-500">{formatDate(planExpiresAt)}</span>
+        <span className="text-xs text-gray-500">
+          {formatDate(planExpiresAt)}
+        </span>
       </div>
     );
   };
@@ -140,7 +144,9 @@ export default function SubscribedBusinessesList() {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-          <p className="text-sm text-gray-500">No subscribed businesses found.</p>
+          <p className="text-sm text-gray-500">
+            No subscribed businesses found.
+          </p>
           <p className="text-xs text-gray-400">
             {planFilter || activeFilter
               ? "Try adjusting your filters."
@@ -152,6 +158,7 @@ export default function SubscribedBusinessesList() {
   }
 
   return (
+    <>
     <div className="space-y-4">
       {/* ── Filters ── */}
       <div className="flex flex-wrap items-end gap-4">
@@ -215,6 +222,7 @@ export default function SubscribedBusinessesList() {
                 <TableHead>Current Plan</TableHead>
                 <TableHead>Trial Expiry</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="w-20">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -235,6 +243,20 @@ export default function SubscribedBusinessesList() {
                   </TableCell>
                   <TableCell>{renderPlanExpiry(biz.planExpiresAt)}</TableCell>
                   <TableCell>{renderStatus(biz.isActive)}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAssigningBusiness({ id: biz.id, name: biz.name });
+                        setAssignModalOpen(true);
+                      }}
+                      aria-label={`Assign plan to ${biz.name}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -252,5 +274,19 @@ export default function SubscribedBusinessesList() {
         />
       )}
     </div>
+
+      {assigningBusiness && (
+        <AssignPlanModal
+          open={assignModalOpen}
+          onClose={() => {
+            setAssignModalOpen(false);
+            setAssigningBusiness(null);
+            queryClient.invalidateQueries({ queryKey: subscribedBusinessKeys.lists({}) });
+          }}
+          businessId={assigningBusiness.id}
+          businessName={assigningBusiness.name}
+        />
+      )}
+    </>
   );
 }
