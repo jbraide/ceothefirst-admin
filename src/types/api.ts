@@ -392,3 +392,40 @@ export interface DeleteBusinessResponse {
   businessId: string;
   businessName: string;
 }
+
+// ─── Subscription Businesses ──────────────────────────────────────
+
+export interface SubscribedBusiness {
+  id: string;
+  name: string;
+  ownerPhone: string;
+  businessType: string | null;
+  category: string | null;
+  isActive: boolean;
+  planActivatedAt: string | null;
+  planExpiresAt: string | null;
+  createdAt: string;
+  plan: {
+    id: string;
+    name: string;
+    label: string;
+    price: string;
+  };
+}
+
+export interface SubscriptionOverview {
+  totalSubscribers: number;
+  totalEstimatedRevenue: number;
+  plans: {
+    planLabel: string;
+    subscriberCount: number;
+    price: number;
+    estimatedMonthlyRevenue: number;
+  }[];
+  recentChanges: {
+    targetId: string;
+    details: string;
+    createdAt: string;
+    admin: { name: string };
+  }[];
+}

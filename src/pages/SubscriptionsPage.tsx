@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import PlansList from "@/features/subscriptions/components/PlansList";
 import PlanFormModal from "@/features/subscriptions/components/PlanFormModal";
 import PlanFeaturesPanel from "@/features/subscriptions/components/PlanFeaturesPanel";
+import SubscribedBusinessesList from "@/features/subscriptions/components/SubscribedBusinessesList";
 import {
   getFeatures,
   featureKeys,
@@ -14,7 +15,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import type { Plan, FeatureFlag } from "@/types/api";
 
-type Tab = "plans" | "features";
+type Tab = "plans" | "features" | "businesses";
 
 const CATEGORY_ORDER = [
   "core",
@@ -131,6 +132,12 @@ export default function SubscriptionsPage() {
         >
           Feature Flags
         </button>
+        <button
+          className={tabClasses(tab === "businesses")}
+          onClick={() => setTab("businesses")}
+        >
+          Businesses
+        </button>
       </div>
 
       {/* ─── Plans Tab ─────────────────────────────────────── */}
@@ -152,6 +159,9 @@ export default function SubscriptionsPage() {
           labels={CATEGORY_LABELS}
         />
       )}
+
+      {/* ─── Businesses Tab ─────────────────────────────────── */}
+      {tab === "businesses" && <SubscribedBusinessesList />}
 
       {/* ─── Plan Form Modal ───────────────────────────────── */}
       <PlanFormModal
