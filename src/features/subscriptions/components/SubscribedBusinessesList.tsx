@@ -230,7 +230,7 @@ export default function SubscribedBusinessesList() {
                   <TableCell>{biz.category ?? "—"}</TableCell>
                   <TableCell>
                     <Badge variant="outline" size="sm">
-                      {biz.plan.label}
+                      {biz.plan?.label ?? "—"}
                     </Badge>
                   </TableCell>
                   <TableCell>{renderPlanExpiry(biz.planExpiresAt)}</TableCell>
