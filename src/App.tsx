@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/features/auth/components/ProtectedRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
@@ -29,16 +30,16 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
-          <Route path="businesses" element={<BusinessesPage />} />
-          <Route path="businesses/:id" element={<BusinessDetailPage />} />
-          <Route path="verifications" element={<VerificationsPage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
-          <Route path="search" element={<SearchPage />} />
-          <Route path="audit" element={<AuditLogsPage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="admins" element={<AdminManagementPage />} />
-          <Route path="subscriptions" element={<SubscriptionsPage />} />
+          <Route index element={<ErrorBoundary><DashboardPage /></ErrorBoundary>} />
+          <Route path="businesses" element={<ErrorBoundary><BusinessesPage /></ErrorBoundary>} />
+          <Route path="businesses/:id" element={<ErrorBoundary><BusinessDetailPage /></ErrorBoundary>} />
+          <Route path="verifications" element={<ErrorBoundary><VerificationsPage /></ErrorBoundary>} />
+          <Route path="analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
+          <Route path="search" element={<ErrorBoundary><SearchPage /></ErrorBoundary>} />
+          <Route path="audit" element={<ErrorBoundary><AuditLogsPage /></ErrorBoundary>} />
+          <Route path="notifications" element={<ErrorBoundary><NotificationsPage /></ErrorBoundary>} />
+          <Route path="admins" element={<ErrorBoundary><AdminManagementPage /></ErrorBoundary>} />
+          <Route path="subscriptions" element={<ErrorBoundary><SubscriptionsPage /></ErrorBoundary>} />
         </Route>
       </Routes>
     </BrowserRouter>
