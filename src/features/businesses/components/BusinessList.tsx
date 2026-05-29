@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Search, Trash2, AlertTriangle } from "lucide-react";
 
 import {
   getBusinesses,
   businessKeys,
   type GetBusinessesParams,
 } from "../api/getBusinesses";
+import { deleteBusiness } from "../api/deleteBusiness";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import {
   Table,
@@ -21,6 +23,7 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
+import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
 import type { BusinessListItem } from "@/types/api";
 
@@ -40,9 +43,15 @@ function formatDate(dateString: string): string {
 
 export default function BusinessList() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 400);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const queryParams: GetBusinessesParams = {
     page,
@@ -57,32 +66,95 @@ export default function BusinessList() {
     staleTime: 30_000,
   });
 
-  // Reset to page 1 when search changes
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
+    setSelectedIds(new Set());
   };
 
   const businesses = data?.results ?? [];
   const meta = data?.meta;
 
+  const allVisibleSelected =
+    businesses.length > 0 && businesses.every((b) => selectedIds.has(b.id));
+  const someSelected = selectedIds.size > 0;
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        for (const b of businesses) next.delete(b.id);
+      } else {
+        for (const b of businesses) next.add(b.id);
+      }
+      return next;
+    });
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function handleBulkDelete() {
+    const ids = Array.from(selectedIds);
+    setDeleting(true);
+    setDeleteError(null);
+
+    let failed = 0;
+    for (const id of ids) {
+      try {
+        await deleteBusiness(id);
+      } catch {
+        failed++;
+      }
+    }
+
+    if (failed > 0) {
+      setDeleteError(`${failed} of ${ids.length} deletions failed.`);
+    }
+
+    setDeleting(false);
+    setSelectedIds(new Set());
+    setDeleteConfirmOpen(false);
+    queryClient.invalidateQueries({ queryKey: businessKeys.lists() });
+  }
+
+  const selectedNames = businesses
+    .filter((b) => selectedIds.has(b.id))
+    .map((b) => b.name);
+
   return (
     <div className="space-y-6">
-      {/* ─── Header & Search ─── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Businesses</h2>
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search businesses..."
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9"
-          />
+        <div className="flex items-center gap-3">
+          {someSelected && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setDeleteConfirmOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Selected ({selectedIds.size})
+            </Button>
+          )}
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search businesses..."
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-9"
+            />
+          </div>
         </div>
       </div>
 
-      {/* ─── Content Card ─── */}
       <Card>
         <CardHeader>
           <CardTitle>
@@ -95,17 +167,15 @@ export default function BusinessList() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Loading State */}
           {isLoading && (
             <div className="flex items-center justify-center py-16">
               <Spinner className="h-8 w-8" />
             </div>
           )}
 
-          {/* Error State */}
           {isError && !isLoading && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-destructive font-medium">
+              <p className="font-medium text-destructive">
                 Failed to load businesses
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -114,7 +184,6 @@ export default function BusinessList() {
             </div>
           )}
 
-          {/* Empty State */}
           {!isLoading && !isError && businesses.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <p className="text-lg font-medium text-muted-foreground">
@@ -128,13 +197,20 @@ export default function BusinessList() {
             </div>
           )}
 
-          {/* Table */}
           {!isLoading && !isError && businesses.length > 0 && (
             <>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <input
+                          type="checkbox"
+                          checked={allVisibleSelected}
+                          onChange={toggleSelectAll}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary-500"
+                        />
+                      </TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Category</TableHead>
@@ -149,18 +225,29 @@ export default function BusinessList() {
                     {businesses.map((biz: BusinessListItem) => (
                       <TableRow
                         key={biz.id}
-                        className="cursor-pointer hover:bg-muted/50 transition-colors"
-                        tabIndex={0}
-                        role="link"
-                        onClick={() => navigate(`/businesses/${biz.id}`)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            navigate(`/businesses/${biz.id}`);
-                          }
-                        }}
+                        className="hover:bg-muted/50 transition-colors"
                       >
-                        <TableCell className="font-medium">
+                        <TableCell className="w-10">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(biz.id)}
+                            onChange={() => toggleSelect(biz.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary-500"
+                          />
+                        </TableCell>
+                        <TableCell
+                          className="cursor-pointer font-medium"
+                          tabIndex={0}
+                          role="link"
+                          onClick={() => navigate(`/businesses/${biz.id}`)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              navigate(`/businesses/${biz.id}`);
+                            }
+                          }}
+                        >
                           {biz.name}
                         </TableCell>
                         <TableCell>{biz.ownerPhone}</TableCell>
@@ -190,7 +277,6 @@ export default function BusinessList() {
                 </Table>
               </div>
 
-              {/* Pagination */}
               {meta && meta.totalPages > 1 && (
                 <div className="mt-6 flex items-center justify-between border-t pt-4">
                   <p className="text-sm text-muted-foreground">
@@ -207,6 +293,60 @@ export default function BusinessList() {
           )}
         </CardContent>
       </Card>
+
+      <Modal
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        title="Delete Selected Businesses"
+        description={`Permanently delete ${selectedIds.size} business(es) and all associated data.`}
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <p className="text-sm">
+                This will permanently delete the following businesses and ALL
+                their data (transactions, products, staff, contacts, etc.).
+                This action cannot be undone.
+              </p>
+              {selectedNames.length > 0 && (
+                <ul className="mt-2 max-h-40 overflow-y-auto rounded border p-2 text-sm">
+                  {selectedNames.map((name) => (
+                    <li key={name} className="py-0.5">
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {deleteError && (
+            <p className="text-sm text-destructive">{deleteError}</p>
+          )}
+
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirmOpen(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleBulkDelete}
+              loading={deleting}
+            >
+              {deleting
+                ? "Deleting..."
+                : `Yes, Delete ${selectedIds.size} Business${selectedIds.size > 1 ? "es" : ""}`}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
