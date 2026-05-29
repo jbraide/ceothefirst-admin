@@ -68,6 +68,11 @@ function formatCurrency(amount: string): string {
   }).format(Number(amount));
 }
 
+function planLimit(val: number | undefined): string {
+  const v = val ?? 0;
+  return v === -1 ? "Unlimited" : v.toLocaleString();
+}
+
 function StatCard({
   icon: Icon,
   label,
@@ -347,9 +352,7 @@ export default function BusinessDetailView() {
                   Max Transactions
                 </p>
                 <p className="font-semibold">
-                  {currentPlan.maxTransactions === -1
-                    ? "Unlimited"
-                    : currentPlan.maxTransactions.toLocaleString()}
+                  {planLimit(currentPlan.maxTransactions)}
                 </p>
               </div>
               <div>
@@ -357,9 +360,7 @@ export default function BusinessDetailView() {
                   Max Products
                 </p>
                 <p className="font-semibold">
-                  {currentPlan.maxProducts === -1
-                    ? "Unlimited"
-                    : currentPlan.maxProducts.toLocaleString()}
+                  {planLimit(currentPlan.maxProducts)}
                 </p>
               </div>
               <div>
@@ -367,9 +368,7 @@ export default function BusinessDetailView() {
                   Max Staff
                 </p>
                 <p className="font-semibold">
-                  {currentPlan.maxStaff === -1
-                    ? "Unlimited"
-                    : currentPlan.maxStaff.toLocaleString()}
+                  {planLimit(currentPlan.maxStaff)}
                 </p>
               </div>
               <div>
@@ -377,9 +376,7 @@ export default function BusinessDetailView() {
                   Max Contacts
                 </p>
                 <p className="font-semibold">
-                  {currentPlan.maxContacts === -1
-                    ? "Unlimited"
-                    : currentPlan.maxContacts.toLocaleString()}
+                  {planLimit(currentPlan.maxContacts)}
                 </p>
               </div>
             </div>
