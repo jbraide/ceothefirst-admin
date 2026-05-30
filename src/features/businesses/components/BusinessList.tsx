@@ -263,6 +263,7 @@ export default function BusinessList() {
                       <TableHead>Phone</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>State</TableHead>
+                      <TableHead>Owner</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>KYC</TableHead>
                       <TableHead>Plan</TableHead>
@@ -302,6 +303,12 @@ export default function BusinessList() {
                         <TableCell>{biz.ownerPhone}</TableCell>
                         <TableCell>{biz.category ?? "—"}</TableCell>
                         <TableCell>{biz.state ?? "—"}</TableCell>
+                        <TableCell
+                          className="max-w-[140px] truncate"
+                          title={biz.owner?.name}
+                        >
+                          {biz.owner?.name ?? biz.ownerPhone}
+                        </TableCell>
                         <TableCell>
                           <Badge
                             variant={biz.isActive ? "success" : "destructive"}
@@ -315,8 +322,8 @@ export default function BusinessList() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {biz.planName ? (
-                            <Badge variant="outline">{biz.planName}</Badge>
+                          {biz.plan?.label ? (
+                            <Badge variant="outline">{biz.plan.label}</Badge>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}

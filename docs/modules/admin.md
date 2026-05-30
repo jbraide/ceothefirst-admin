@@ -686,6 +686,8 @@ Paginated list of all registered businesses with search support.
     {
       "id": "cmny6abc0000...",
       "name": "NairaFlow Demo Store",
+      "ownerId": "cmpo48p66...",
+      "owner": { "id": "cmpo48p66...", "phone": "08010000101", "name": "Ibrahim Musa" },
       "ownerPhone": "08000000000",
       "email": "demo@nairaflow.com",
       "category": "Retail",
@@ -694,6 +696,7 @@ Paginated list of all registered businesses with search support.
       "city": "Ikeja",
       "isActive": true,
       "verificationStatus": "VERIFIED",
+      "plan": { "id": "cmpli9sxn...", "name": "starter", "label": "Starter", "price": "0" },
       "createdAt": "2026-01-15T00:00:00.000Z",
       "_count": {
         "transactions": 120,
@@ -717,7 +720,10 @@ Paginated list of all registered businesses with search support.
 |-------|------|-------------|
 | `id` | `string` (CUID) | Unique business ID |
 | `name` | `string` | Business display name |
-| `ownerPhone` | `string` | Owner's phone (unique, used for login) |
+| `ownerPhone` | `string` | Owner's phone (legacy) |
+| `ownerId` | `string` | Owner's unique ID |
+| `owner` | `object` | Owner details — id, phone, name |
+| `plan` | `object` | Current plan — id, name, label, price |
 | `email` | `string \| null` | Optional business email |
 | `category` | `string \| null` | Industry category |
 | `businessType` | `string \| null` | `"product"`, `"service"`, or `"both"` |
@@ -743,6 +749,71 @@ Paginated list of all registered businesses with search support.
 
 ---
 
+### List All Owners
+
+**`GET /api/v1/admin/owners`**
+
+Paginated list of all registered owners with their businesses. Shows the full owner → business hierarchy.
+
+**Query Parameters:**
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `page` | `number` (int) | `1` | Page number |
+| `limit` | `number` (int) | `50` | Items per page |
+
+**Response (`data`):**
+```json
+{
+  "results": [
+    {
+      "id": "cmpo48p66000012ijjs90nz9v",
+      "phone": "08010000666",
+      "name": "MultiBiz Owner",
+      "createdAt": "2026-05-27T00:00:00Z",
+      "businessCount": 4,
+      "businesses": [
+        {
+          "id": "biz_a",
+          "name": "First Venture",
+          "businessType": "product",
+          "isActive": true,
+          "plan": { "name": "starter", "label": "Starter" }
+        },
+        {
+          "id": "biz_b",
+          "name": "Second Venture",
+          "businessType": "service",
+          "isActive": true,
+          "plan": { "name": "starter", "label": "Starter" }
+        },
+        {
+          "id": "biz_c",
+          "name": "Crypto Side Hustle",
+          "businessType": "service",
+          "isActive": true,
+          "plan": { "name": "starter", "label": "Starter" }
+        },
+        {
+          "id": "biz_d",
+          "name": "New Test Business",
+          "businessType": "product",
+          "isActive": true,
+          "plan": { "name": "growth", "label": "Growth" }
+        }
+      ]
+    }
+  ],
+  "meta": { "total": 16, "page": 1, "limit": 50, "pages": 1 }
+}
+```
+
+> **Multi-business owners** will have `businessCount` > 1 with all their businesses listed under the `businesses` array. Each business includes its current `plan` (name, label).
+
+**Status:** `200`
+
+---
+
 ### Get Business Details
 
 **`GET /api/v1/admin/businesses/:id`**
@@ -754,6 +825,8 @@ Deep-dive view of a single business including recent transaction history.
 {
   "id": "cmny6abc0000...",
   "name": "NairaFlow Demo Store",
+  "owner": { "id": "cmpo48p66...", "phone": "08010000101", "name": "Ibrahim Musa" },
+  "plan": { "id": "cmpli9sxu...", "name": "growth", "label": "Growth", "price": "5000" },
   "ownerPhone": "08000000000",
   "email": "demo@nairaflow.com",
   "category": "Retail",
@@ -774,6 +847,11 @@ Deep-dive view of a single business including recent transaction history.
     "staff": 2,
     "contacts": 15
   },
+  "ownerBusinesses": [
+    { "id": "biz_a", "name": "Lagos Gadgets Hub", "businessType": "product", "category": "Retail", "isActive": true, "plan": { "name": "growth", "label": "Growth" } },
+    { "id": "biz_b", "name": "BlockTrade FX", "businessType": "service", "category": "Financial Services", "isActive": true, "plan": { "name": "starter", "label": "Starter" } },
+    { "id": "biz_c", "name": "Pixelcraft Studio", "businessType": "service", "category": "Creative Agency", "isActive": true, "plan": { "name": "starter", "label": "Starter" } }
+  ],
   "recentTransactions": [
     {
       "id": "cmny6xyz...",
@@ -797,6 +875,9 @@ Deep-dive view of a single business including recent transaction history.
 ```
 
 **Additional fields (vs list endpoint):**
+| `owner` | `object` | Owner details — id, phone, name |
+| `plan` | `object` | Current plan — id, name, label, price |
+| `ownerBusinesses` | `array` | **ALL businesses owned by the same owner.** Each shows id, name, type, category, isActive, plan. Empty if owner has only this business. |
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -1344,6 +1425,10 @@ Send a push notification to a specific business.
 | `GET` | `/admin/admins/:id` | Get admin details | — | Super | `200` / `404` |
 | `PATCH` | `/admin/admins/:id` | Update admin account | — | Super | `200` / `404` |
 | `PATCH` | `/admin/admins/:id/deactivate` | Deactivate admin | — | Super | `200` / `404` |
+| `GET` | `/admin/owners` | List all owners with businesses | `page`, `limit` | Super, Support | `200` |
+| `GET` | `/admin/subscriptions/overview` | Plan distribution + revenue | — | Super, Support | `200` |
+| `GET` | `/admin/subscriptions/businesses` | Businesses with plans (paginated) | `plan`, `isActive`, `page`, `limit` | Super, Support | `200` |
+| `PATCH` | `/admin/businesses/:id/plan/adjust` | Adjust plan with limits + notes | — | Super | `200` / `404` |
 
 **Roles legend:** `All` = SUPER_ADMIN, SUPPORT_ADMIN, ANALYST | `Super` = SUPER_ADMIN only | `Super, Support` = SUPER_ADMIN, SUPPORT_ADMIN
 

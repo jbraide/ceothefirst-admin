@@ -14,6 +14,7 @@ import {
   Package,
   Users,
   Contact,
+  User,
   CreditCard,
   ShieldCheck,
   FileText,
@@ -26,7 +27,6 @@ import { getBusinessDetail } from "../api/getBusinessDetail";
 import { updateBusinessStatus } from "../api/updateBusinessStatus";
 import { deleteBusiness } from "../api/deleteBusiness";
 import { businessKeys } from "../api/getBusinesses";
-import { getBusinessPlan } from "@/features/subscriptions/api/getBusinessPlan";
 import AssignPlanModal from "@/features/subscriptions/components/AssignPlanModal";
 import { cn } from "@/utils/cn";
 import { Button } from "@/components/ui/Button";
@@ -66,11 +66,6 @@ function formatCurrency(amount: string): string {
     currency: "NGN",
     minimumFractionDigits: 2,
   }).format(Number(amount));
-}
-
-function planLimit(val: number | undefined): string {
-  const v = val ?? 0;
-  return v === -1 ? "Unlimited" : v.toLocaleString();
 }
 
 function StatCard({
@@ -114,18 +109,6 @@ export default function BusinessDetailView() {
     queryFn: () => getBusinessDetail(id!),
     enabled: !!id,
     staleTime: 30_000,
-  });
-
-  const {
-    data: currentPlan,
-    isLoading: planLoading,
-    isError: planError,
-  } = useQuery({
-    queryKey: ["business-plan", id],
-    queryFn: () => getBusinessPlan(id!),
-    enabled: !!id,
-    staleTime: 60_000,
-    retry: false,
   });
 
   const statusMutation = useMutation({
@@ -270,6 +253,7 @@ export default function BusinessDetailView() {
               label="Registered"
               value={formatDate(business.createdAt)}
             />
+            <InfoRow icon={User} label="Owner" value={business.owner?.name} />
           </CardContent>
         </Card>
 
@@ -320,23 +304,14 @@ export default function BusinessDetailView() {
           </Button>
         </CardHeader>
         <CardContent>
-          {planLoading ? (
-            <div className="flex items-center gap-3 py-2">
-              <Spinner size={20} />
-              <span className="text-sm text-muted-foreground">
-                Loading plan...
-              </span>
-            </div>
-          ) : planError ? (
-            <p className="text-sm text-red-600">Failed to load plan.</p>
-          ) : currentPlan ? (
+          {business.plan ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   Plan
                 </p>
                 <p className="font-semibold">
-                  {currentPlan.label} ({currentPlan.name})
+                  {business.plan.label} ({business.plan.name})
                 </p>
               </div>
               <div>
@@ -344,39 +319,7 @@ export default function BusinessDetailView() {
                   Price
                 </p>
                 <p className="font-semibold">
-                  ₦{Number(currentPlan.price).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Max Transactions
-                </p>
-                <p className="font-semibold">
-                  {planLimit(currentPlan.maxTransactions)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Max Products
-                </p>
-                <p className="font-semibold">
-                  {planLimit(currentPlan.maxProducts)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Max Staff
-                </p>
-                <p className="font-semibold">
-                  {planLimit(currentPlan.maxStaff)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Max Contacts
-                </p>
-                <p className="font-semibold">
-                  {planLimit(currentPlan.maxContacts)}
+                  ₦{Number(business.plan.price).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -385,6 +328,74 @@ export default function BusinessDetailView() {
           )}
         </CardContent>
       </Card>
+
+      {/* ─── Owner's Other Businesses ─── */}
+      {business.ownerBusinesses && business.ownerBusinesses.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Owner&apos;s Other Businesses
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {business.ownerBusinesses
+                    .filter((b) => b.id !== business.id)
+                    .map((sibling) => (
+                      <TableRow
+                        key={sibling.id}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => navigate(`/businesses/${sibling.id}`)}
+                        tabIndex={0}
+                        role="link"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            navigate(`/businesses/${sibling.id}`);
+                          }
+                        }}
+                      >
+                        <TableCell className="font-medium text-primary hover:underline">
+                          {sibling.name}
+                        </TableCell>
+                        <TableCell>{sibling.businessType ?? "—"}</TableCell>
+                        <TableCell>
+                          {sibling.plan ? (
+                            <Badge variant="outline">
+                              {sibling.plan.label}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              sibling.isActive ? "success" : "destructive"
+                            }
+                          >
+                            {sibling.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ─── Verification Documents ─── */}
       <Card>

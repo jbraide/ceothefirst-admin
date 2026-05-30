@@ -106,6 +106,12 @@ export interface IndustryCategory {
 export interface BusinessListItem {
   id: string;
   name: string;
+  ownerId: string;
+  owner: {
+    id: string;
+    phone: string;
+    name: string;
+  };
   ownerPhone: string;
   email: string | null;
   category: string | null;
@@ -114,8 +120,14 @@ export interface BusinessListItem {
   city: string | null;
   isActive: boolean;
   verificationStatus: "PENDING" | "VERIFIED" | "REJECTED";
-  createdAt: string;
+  plan: {
+    id: string;
+    name: string;
+    label: string;
+    price: string;
+  } | null;
   planName?: string;
+  createdAt: string;
   _count: {
     transactions: number;
     products: number;
@@ -147,6 +159,16 @@ export interface BusinessDetail extends BusinessListItem {
   accountNumber: string | null;
   accountName: string | null;
   verificationDocs: string[];
+  owner: { id: string; phone: string; name: string };
+  plan: { id: string; name: string; label: string; price: string } | null;
+  ownerBusinesses: {
+    id: string;
+    name: string;
+    businessType: string | null;
+    category: string | null;
+    isActive: boolean;
+    plan: { name: string; label: string } | null;
+  }[];
   _count: BusinessListItem["_count"] & { contacts: number };
   recentTransactions: RecentTransaction[];
 }
@@ -428,4 +450,23 @@ export interface SubscriptionOverview {
     createdAt: string;
     admin: { name: string };
   }[];
+}
+
+// ─── Owners ───────────────────────────────────────────────────────
+
+export interface OwnerBusiness {
+  id: string;
+  name: string;
+  businessType: string | null;
+  isActive: boolean;
+  plan: { name: string; label: string } | null;
+}
+
+export interface OwnerListItem {
+  id: string;
+  phone: string;
+  name: string;
+  createdAt: string;
+  businessCount: number;
+  businesses: OwnerBusiness[];
 }

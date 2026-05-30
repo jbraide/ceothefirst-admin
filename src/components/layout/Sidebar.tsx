@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   LogOut,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -33,6 +34,7 @@ interface NavItem {
 const allNavItems: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/businesses", label: "Businesses", icon: Building2 },
+  { to: "/owners", label: "Owners", icon: Users },
   { to: "/verifications", label: "Verifications", icon: ShieldCheck },
   { to: "/admins", label: "Admin Management", icon: Shield },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
@@ -46,6 +48,7 @@ const roleAccess: Record<AdminRole, string[]> = {
   SUPER_ADMIN: [
     "dashboard",
     "businesses",
+    "owners",
     "verifications",
     "analytics",
     "search",
@@ -54,13 +57,21 @@ const roleAccess: Record<AdminRole, string[]> = {
     "admins",
     "subscriptions",
   ],
-  SUPPORT_ADMIN: ["dashboard", "analytics", "businesses", "search", "audit"],
+  SUPPORT_ADMIN: [
+    "dashboard",
+    "analytics",
+    "businesses",
+    "owners",
+    "search",
+    "audit",
+  ],
   ANALYST: ["dashboard", "analytics"],
 };
 
 const itemKeyMap: Record<string, string> = {
   "/": "dashboard",
   "/businesses": "businesses",
+  "/owners": "owners",
   "/verifications": "verifications",
   "/admins": "admins",
   "/analytics": "analytics",
