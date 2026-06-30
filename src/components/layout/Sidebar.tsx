@@ -9,6 +9,7 @@ import {
   Search,
   ScrollText,
   Bell,
+  Lightbulb,
   CreditCard,
   Menu,
   X,
@@ -41,6 +42,7 @@ const allNavItems: NavItem[] = [
   { to: "/search", label: "Search", icon: Search },
   { to: "/audit", label: "Audit Logs", icon: ScrollText },
   { to: "/notifications", label: "Notifications", icon: Bell },
+  { to: "/feature-requests", label: "Feature Requests", icon: Lightbulb },
   { to: "/subscriptions", label: "Subscriptions", icon: CreditCard },
 ];
 
@@ -56,6 +58,7 @@ const roleAccess: Record<AdminRole, string[]> = {
     "notifications",
     "admins",
     "subscriptions",
+    "feature-requests",
   ],
   SUPPORT_ADMIN: [
     "dashboard",
@@ -64,6 +67,7 @@ const roleAccess: Record<AdminRole, string[]> = {
     "owners",
     "search",
     "audit",
+    "feature-requests",
   ],
   ANALYST: ["dashboard", "analytics"],
 };
@@ -79,6 +83,7 @@ const itemKeyMap: Record<string, string> = {
   "/audit": "audit",
   "/notifications": "notifications",
   "/subscriptions": "subscriptions",
+  "/feature-requests": "feature-requests",
 };
 
 /* ------------------------------------------------------------------ */

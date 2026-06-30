@@ -470,3 +470,84 @@ export interface OwnerListItem {
   businessCount: number;
   businesses: OwnerBusiness[];
 }
+
+// ─── Feature Requests ──────────────────────────────────────────────
+
+export const FEATURE_MODULES = [
+  "contacts",
+  "transactions",
+  "debts",
+  "invoices",
+  "reports",
+  "staff",
+  "inventory",
+  "leads",
+  "projects",
+  "properties",
+  "bookings",
+  "maintenance",
+  "reviews",
+  "other",
+] as const;
+
+export type FeatureModule = (typeof FEATURE_MODULES)[number];
+
+export const FEATURE_STATUSES = [
+  "pending",
+  "reviewed",
+  "planned",
+  "in_progress",
+  "completed",
+  "declined",
+] as const;
+
+export type FeatureStatus = (typeof FEATURE_STATUSES)[number];
+
+export const FEATURE_PRIORITIES = [
+  "low",
+  "medium",
+  "high",
+  "critical",
+] as const;
+
+export type FeaturePriority = (typeof FEATURE_PRIORITIES)[number];
+
+export interface FeatureRequestItem {
+  id: string;
+  module: FeatureModule;
+  title: string;
+  status: FeatureStatus;
+  priority: FeaturePriority;
+  voteCount: number;
+  source: "web" | "telegram" | "whatsapp";
+  business: { name: string };
+  createdAt: string;
+}
+
+export interface FeatureRequestDetail extends FeatureRequestItem {
+  description: string;
+  adminNotes: string | null;
+  updatedAt: string;
+}
+
+export interface UpdateFeatureRequestStatus {
+  status?: FeatureStatus;
+  adminNotes?: string;
+}
+
+export const MODULE_LABELS: Record<string, string> = {
+  contacts: "Contacts",
+  transactions: "Transactions",
+  debts: "Debts",
+  invoices: "Invoices",
+  reports: "Reports",
+  staff: "Staff",
+  inventory: "Inventory",
+  leads: "Leads",
+  projects: "Projects",
+  properties: "Properties",
+  bookings: "Bookings",
+  maintenance: "Maintenance",
+  reviews: "Reviews",
+  other: "Other",
+};

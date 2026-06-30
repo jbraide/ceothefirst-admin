@@ -14,6 +14,7 @@ import NotificationsPage from "@/pages/NotificationsPage";
 import AdminManagementPage from "@/pages/AdminManagementPage";
 import SubscriptionsPage from "@/pages/SubscriptionsPage";
 import OwnersPage from "@/pages/OwnersPage";
+import FeatureRequestsPage from "@/pages/FeatureRequestsPage";
 
 export default function App() {
   return (
@@ -116,6 +117,14 @@ export default function App() {
             element={
               <ErrorBoundary>
                 <OwnersPage />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="feature-requests"
+            element={
+              <ErrorBoundary>
+                <FeatureRequestsPage />
               </ErrorBoundary>
             }
           />
