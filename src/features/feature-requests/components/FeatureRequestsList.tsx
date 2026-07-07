@@ -7,9 +7,8 @@ import {
   featureRequestKeys,
 } from "@/features/feature-requests/api/getFeatureRequests";
 import { updateFeatureRequestStatus } from "@/features/feature-requests/api/updateFeatureRequest";
-import { getFeatureRequestDetail } from "@/features/feature-requests/api/getFeatureRequestDetail";
 
-import type { FeatureStatus, UpdateFeatureRequestStatus } from "@/types/api";
+import type { FeatureRequestItem, FeatureStatus, UpdateFeatureRequestStatus } from "@/types/api";
 import { FEATURE_MODULES, FEATURE_STATUSES, MODULE_LABELS } from "@/types/api";
 
 import { Card, CardContent } from "@/components/ui/Card";
@@ -197,60 +196,27 @@ function StatusUpdateForm({
 /* -------------------------------------------------------------------------- */
 
 interface ExpandedDetailProps {
-  featureId: string;
+  item: FeatureRequestItem;
 }
 
-function ExpandedDetail({ featureId }: ExpandedDetailProps) {
+function ExpandedDetail({ item }: ExpandedDetailProps) {
   const queryClient = useQueryClient();
   const { toast, showToast, clearToast } = useToast();
 
-  const {
-    data: detail,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["feature-requests", "detail", featureId],
-    queryFn: () => getFeatureRequestDetail(featureId),
-    enabled: !!featureId,
-    staleTime: 30_000,
-  });
-
   const updateMutation = useMutation({
     mutationFn: (body: UpdateFeatureRequestStatus) =>
-      updateFeatureRequestStatus(featureId, body),
+      updateFeatureRequestStatus(item.id, body),
     onSuccess: () => {
       showToast("Feature request updated successfully.", "success");
       queryClient.invalidateQueries({
         queryKey: featureRequestKeys.lists(),
       });
-      queryClient.invalidateQueries({
-        queryKey: ["feature-requests", "detail", featureId],
-      });
+
     },
     onError: () => {
       showToast("Failed to update feature request.", "error");
     },
   });
-
-  if (isLoading) {
-    return (
-      <td colSpan={8} className="px-4 py-6">
-        <div className="flex justify-center">
-          <Spinner size={20} />
-        </div>
-      </td>
-    );
-  }
-
-  if (isError || !detail) {
-    return (
-      <td colSpan={8} className="px-4 py-6">
-        <p className="text-center text-sm text-red-600">
-          Failed to load request details.
-        </p>
-      </td>
-    );
-  }
 
   return (
     <td colSpan={8} className="px-4 py-4">
@@ -259,40 +225,14 @@ function ExpandedDetail({ featureId }: ExpandedDetailProps) {
       )}
 
       <div className="space-y-4">
-        {/* Description */}
-        {detail.description && (
-          <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-primary/50 mb-1">
-              Description
-            </h4>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {detail.description}
-            </p>
-          </div>
-        )}
-
-        {/* Admin Notes (current) */}
-        {detail.adminNotes && (
-          <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-primary/50 mb-1">
-              Admin Notes
-            </h4>
-            <p className="text-sm text-gray-600 whitespace-pre-wrap">
-              {detail.adminNotes}
-            </p>
-          </div>
-        )}
-
-        {/* Last updated */}
         <p className="text-xs text-gray-400">
-          Last updated: {formatDate(detail.updatedAt)}
+          Created: {formatDate(item.createdAt)} &middot; {item.voteCount} vote{item.voteCount !== 1 ? "s" : ""}
         </p>
 
-        {/* Inline status update form */}
         <StatusUpdateForm
-          featureId={featureId}
-          currentStatus={detail.status}
-          currentAdminNotes={detail.adminNotes}
+          featureId={item.id}
+          currentStatus={item.status}
+          currentAdminNotes={null}
           isPending={updateMutation.isPending}
           onSubmit={(body) => updateMutation.mutate(body)}
         />
@@ -484,7 +424,7 @@ export default function FeatureRequestsList() {
                       {/* Expanded detail row */}
                       {isExpanded && (
                         <TableRow>
-                          <ExpandedDetail featureId={item.id} />
+                          <ExpandedDetail item={item} />
                         </TableRow>
                       )}
                     </>
