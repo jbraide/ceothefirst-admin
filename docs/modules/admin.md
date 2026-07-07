@@ -749,6 +749,50 @@ Paginated list of all registered businesses with search support.
 
 ---
 
+### Export Businesses as CSV
+
+**`GET /api/v1/admin/businesses/export`**
+
+Exports all businesses as a downloadable CSV file with full business and owner details.
+
+**Auth:** `SUPER_ADMIN` or `SUPPORT_ADMIN`
+
+**Response:** `Content-Type: text/csv` with `Content-Disposition: attachment` header and UTF-8 BOM.
+
+**CSV Columns:**
+
+| Column | Label | Description |
+|--------|-------|-------------|
+| `id` | ID | Business CUID |
+| `name` | Business Name | Business display name |
+| `ownerName` | Owner Name | Owner's full name |
+| `ownerPhone` | Owner Phone | Owner's phone number |
+| `ownerEmail` | Owner Email | Owner's email address |
+| `category` | Category | Industry category |
+| `businessType` | Business Type | product / service / both |
+| `state` | State | Nigerian state |
+| `city` | City | City |
+| `isActive` | Active | Yes / No |
+| `verificationStatus` | Verification | PENDING / VERIFIED / REJECTED |
+| `plan` | Plan | Plan label (e.g. Starter, Growth) |
+| `planPrice` | Plan Price | Plan price in Naira |
+| `transactions` | Transactions | Total transaction count |
+| `products` | Products | Total product count |
+| `staff` | Staff | Total staff count |
+| `contacts` | Contacts | Total contact count |
+| `createdAt` | Created At | Registration date (ISO 8601) |
+
+**cURL Example:**
+```bash
+curl -X GET "https://api.ceothefirst.com/api/v1/admin/businesses/export" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -o businesses.csv
+```
+
+**Status:** `200`
+
+---
+
 ### List All Owners
 
 **`GET /api/v1/admin/owners`**

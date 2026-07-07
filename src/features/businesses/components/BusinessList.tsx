@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, Trash2, AlertTriangle, X } from "lucide-react";
+import { Search, Trash2, AlertTriangle, X, Download } from "lucide-react";
 
 import {
   getBusinesses,
@@ -26,7 +26,10 @@ import {
 import { Pagination } from "@/components/ui/Pagination";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
+import { useAuthStore } from "@/store/authStore";
 import type { BusinessListItem } from "@/types/api";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string ?? "https://api.ceothefirst.com/api/v1";
 
 const KYC_VARIANT: Record<string, "success" | "warning" | "destructive"> = {
   VERIFIED: "success",
@@ -154,6 +157,26 @@ export default function BusinessList() {
     queryClient.invalidateQueries({ queryKey: businessKeys.lists() });
   }
 
+  function handleExportCSV() {
+    const token = useAuthStore.getState().token;
+    if (!token) return;
+    fetch(`${BASE_URL}/admin/businesses/export`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "businesses.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      })
+      .catch((err) => console.error("Export failed:", err));
+  }
+
   const selectedNames = businesses
     .filter((b) => selectedIds.has(b.id))
     .map((b) => b.name);
@@ -162,6 +185,10 @@ export default function BusinessList() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Businesses</h2>
+        <Button variant="outline" size="sm" onClick={handleExportCSV}>
+          <Download className="h-4 w-4" />
+          Export CSV
+        </Button>
         <div className="flex items-center gap-3">
           {someSelected && (
             <Button
