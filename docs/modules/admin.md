@@ -15,7 +15,11 @@ Super Admins use a **separate login flow** from business owners. An admin JWT ca
 | `businessId` | `"SYSTEM"` | Marks this as a cross-tenant (global) context |
 | `role` | `"SUPER_ADMIN" \| "SUPPORT_ADMIN" \| "ANALYST"` | Checked by `RolesGuard` on every admin endpoint |
 
-### Obtaining an Admin Token
+### Obtaining an Admin Token (2FA Required)
+
+Admin login uses **two-factor authentication** — password verification followed by email OTP.
+
+#### Step 1: Password Login
 
 **`POST /api/v1/auth/admin/login`**
 
@@ -26,7 +30,36 @@ Super Admins use a **separate login flow** from business owners. An admin JWT ca
   "password": "admin_password"
 }
 
-// Response (wrapped by interceptor)
+// Response — OTP sent to admin email
+{
+  "success": true,
+  "data": {
+    "requiresOtp": true,
+    "message": "OTP sent to your email. Valid for 5 minutes."
+  },
+  "timestamp": "2026-05-17T12:00:00.000Z"
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `requiresOtp` | Always `true` — indicates OTP step is pending |
+| `message` | Human-readable confirmation |
+
+An OTP is generated, stored in Redis (5-minute TTL), and sent to the admin's registered email via Brevo. No JWT token is returned at this stage.
+
+#### Step 2: Verify OTP
+
+**`POST /api/v1/auth/admin/verify-otp`**
+
+```json
+// Request
+{
+  "email": "admin@nairaflow.com",
+  "otp": "3926"
+}
+
+// Response — JWT tokens returned
 {
   "success": true,
   "data": {
@@ -35,6 +68,25 @@ Super Admins use a **separate login flow** from business owners. An admin JWT ca
   },
   "timestamp": "2026-05-17T12:00:00.000Z"
 }
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `email` | ✅ | Must match the email used in Step 1 |
+| `otp` | ✅ | 4-digit code received via email, valid for 5 minutes |
+
+**Security guarantees:**
+- OTP is **single-use** — deleted from Redis after successful verification
+- Expired OTPs return `401 Invalid or expired OTP`
+- Wrong password returns `401 Invalid credentials` without revealing whether the email exists
+
+#### Full Login Flow
+```
+POST /auth/admin/login  →  { requiresOtp: true, message: "OTP sent..." }
+       │
+       ├── Email sent via Brevo with 4-digit OTP
+       │
+POST /auth/admin/verify-otp  →  { accessToken, refreshToken }
 ```
 
 The admin token is **short-lived (60 minutes)**. Use the refresh token flow (`POST /api/v1/auth/token/refresh`) to rotate — same mechanism as business users.
@@ -709,7 +761,9 @@ Paginated list of all registered businesses with search support.
     "total": 150,
     "page": 1,
     "limit": 20,
-    "totalPages": 8
+    "totalPages": 8,
+    "hasNextPage": true,
+    "hasPreviousPage": false
   }
 }
 ```
@@ -1473,6 +1527,8 @@ Send a push notification to a specific business.
 | `GET` | `/admin/subscriptions/overview` | Plan distribution + revenue | — | Super, Support | `200` |
 | `GET` | `/admin/subscriptions/businesses` | Businesses with plans (paginated) | `plan`, `isActive`, `page`, `limit` | Super, Support | `200` |
 | `PATCH` | `/admin/businesses/:id/plan/adjust` | Adjust plan with limits + notes | — | Super | `200` / `404` |
+| `GET` | `/admin/feature-requests` | List all feature requests (cross-business) | `status`, `module`, `page`, `limit` | Super, Support | `200` |
+| `PATCH` | `/admin/feature-requests/:id` | Update status or add admin notes | — | Super, Support | `200` / `404` |
 
 **Roles legend:** `All` = SUPER_ADMIN, SUPPORT_ADMIN, ANALYST | `Super` = SUPER_ADMIN only | `Super, Support` = SUPER_ADMIN, SUPPORT_ADMIN
 
@@ -1502,6 +1558,8 @@ interface PaginatedResponse<T> {
     page: number;
     limit: number;
     totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   };
 }
 ```

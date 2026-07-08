@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
-import type { LoginRequest, LoginResponse } from "@/types/api";
+import type { LoginRequest, LoginStep1Response } from "@/types/api";
 
 /**
  * Authenticate an admin user with email and password.
@@ -9,8 +9,8 @@ import type { LoginRequest, LoginResponse } from "@/types/api";
  */
 export async function loginAdmin(
   payload: LoginRequest,
-): Promise<LoginResponse> {
-  const response = await apiClient.post<LoginResponse>(
+): Promise<LoginStep1Response> {
+  const response = await apiClient.post<LoginStep1Response>(
     "/auth/admin/login",
     payload,
   );

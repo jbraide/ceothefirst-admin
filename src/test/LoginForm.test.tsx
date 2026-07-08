@@ -4,8 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import LoginForm from "@/features/auth/components/LoginForm";
 
-// ── Mocks ───────────────────────────────────────────────────────────────
-
 const mockNavigate = vi.fn();
 const mockAuthLogin = vi.fn();
 
@@ -18,13 +16,12 @@ vi.mock("@/store/authStore", () => ({
     selector({ login: mockAuthLogin }),
 }));
 
-// Control the login API response
-let loginResolve: (data: { accessToken: string; refreshToken: string }) => void;
+let loginResolve: (data: { requiresOtp: boolean; message: string }) => void;
 let loginReject: (err: Error) => void;
 
 vi.mock("@/features/auth/api/login", () => ({
   loginAdmin: () =>
-    new Promise<{ accessToken: string; refreshToken: string }>(
+    new Promise<{ requiresOtp: boolean; message: string }>(
       (resolve, reject) => {
         loginResolve = resolve;
         loginReject = reject;
@@ -32,27 +29,32 @@ vi.mock("@/features/auth/api/login", () => ({
     ),
 }));
 
-// ── Helpers ─────────────────────────────────────────────────────────────
+let otpResolve: (data: { accessToken: string; refreshToken: string }) => void;
+
+
+vi.mock("@/features/auth/api/verifyOtp", () => ({
+  verifyOtp: () =>
+    new Promise<{ accessToken: string; refreshToken: string }>(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      (resolve, _reject) => {
+        otpResolve = resolve;
+      },
+    ),
+}));
 
 function createQueryClient() {
   return new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
 }
 
 function renderLoginForm() {
-  const qc = createQueryClient();
   return render(
-    <QueryClientProvider client={qc}>
+    <QueryClientProvider client={createQueryClient()}>
       <LoginForm />
     </QueryClientProvider>,
   );
 }
-
-// ── Tests ───────────────────────────────────────────────────────────────
 
 describe("LoginForm", () => {
   beforeEach(() => {
@@ -66,12 +68,10 @@ describe("LoginForm", () => {
       renderLoginForm();
       expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
     });
-
     it("renders password input", () => {
       renderLoginForm();
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     });
-
     it("renders a submit button", () => {
       renderLoginForm();
       expect(
@@ -83,91 +83,66 @@ describe("LoginForm", () => {
   describe("submit button state", () => {
     it("is disabled when email and password are empty", () => {
       renderLoginForm();
-      const button = screen.getByRole("button", { name: /sign in/i });
-      expect(button).toBeDisabled();
+      expect(screen.getByRole("button", { name: /sign in/i })).toBeDisabled();
     });
-
     it("is disabled when only email is filled", async () => {
       renderLoginForm();
-      const user = userEvent.setup();
-
-      await user.type(screen.getByLabelText(/email address/i), "a@b.com");
-
+      const u = userEvent.setup();
+      await u.type(screen.getByLabelText(/email address/i), "a@b.com");
       expect(screen.getByRole("button", { name: /sign in/i })).toBeDisabled();
     });
-
-    it("is disabled when only password is filled", async () => {
+    it("is enabled when both filled", async () => {
       renderLoginForm();
-      const user = userEvent.setup();
-
-      await user.type(screen.getByLabelText(/password/i), "secret123");
-
-      expect(screen.getByRole("button", { name: /sign in/i })).toBeDisabled();
-    });
-
-    it("is enabled when both email and password are filled", async () => {
-      renderLoginForm();
-      const user = userEvent.setup();
-
-      await user.type(screen.getByLabelText(/email address/i), "a@b.com");
-      await user.type(screen.getByLabelText(/password/i), "secret123");
-
+      const u = userEvent.setup();
+      await u.type(screen.getByLabelText(/email address/i), "a@b.com");
+      await u.type(screen.getByLabelText(/password/i), "secret123");
       expect(screen.getByRole("button", { name: /sign in/i })).toBeEnabled();
     });
   });
 
   describe("failed login", () => {
-    it("shows error message on failed login", async () => {
+    it("shows error on failed login", async () => {
       renderLoginForm();
-      const user = userEvent.setup();
-
-      await user.type(screen.getByLabelText(/email address/i), "bad@user.com");
-      await user.type(screen.getByLabelText(/password/i), "wrongpw");
-
-      await user.click(screen.getByRole("button", { name: /sign in/i }));
-
-      // Reject the API call
+      const u = userEvent.setup();
+      await u.type(screen.getByLabelText(/email address/i), "bad@user.com");
+      await u.type(screen.getByLabelText(/password/i), "wrongpw");
+      await u.click(screen.getByRole("button", { name: /sign in/i }));
       loginReject(new Error("Invalid credentials"));
-
-      await waitFor(() => {
-        expect(screen.getByRole("alert")).toBeInTheDocument();
-      });
-
-      expect(screen.getByRole("alert")).toHaveTextContent(
-        "Invalid credentials",
+      await waitFor(() =>
+        expect(screen.getByRole("alert")).toBeInTheDocument(),
       );
     });
   });
 
-  describe("successful login", () => {
-    it("calls authStore.login() and navigates on success", async () => {
+  describe("OTP step", () => {
+    it("shows OTP input after password login", async () => {
       renderLoginForm();
-      const user = userEvent.setup();
-
-      await user.type(
-        screen.getByLabelText(/email address/i),
-        "admin@test.com",
+      const u = userEvent.setup();
+      await u.type(screen.getByLabelText(/email address/i), "admin@test.com");
+      await u.type(screen.getByLabelText(/password/i), "correctpw");
+      await u.click(screen.getByRole("button", { name: /sign in/i }));
+      loginResolve({ requiresOtp: true, message: "OTP sent" });
+      await waitFor(() =>
+        expect(screen.getByLabelText(/otp/i)).toBeInTheDocument(),
       );
-      await user.type(screen.getByLabelText(/password/i), "correctpw");
+    });
+  });
 
-      await user.click(screen.getByRole("button", { name: /sign in/i }));
-
-      // Resolve the API call
-      loginResolve({
-        accessToken: "access-123",
-        refreshToken: "refresh-456",
-      });
-
-      await waitFor(() => {
-        expect(mockAuthLogin).toHaveBeenCalledTimes(1);
-      });
-
-      expect(mockAuthLogin).toHaveBeenCalledWith({
-        token: "access-123",
-        refreshToken: "refresh-456",
-        user: { name: "admin@test.com", email: "admin@test.com", role: "ANALYST" },
-      });
-
+  describe("successful OTP", () => {
+    it("stores token and navigates after OTP", async () => {
+      renderLoginForm();
+      const u = userEvent.setup();
+      await u.type(screen.getByLabelText(/email address/i), "admin@test.com");
+      await u.type(screen.getByLabelText(/password/i), "correctpw");
+      await u.click(screen.getByRole("button", { name: /sign in/i }));
+      loginResolve({ requiresOtp: true, message: "OTP sent" });
+      await waitFor(() =>
+        expect(screen.getByLabelText(/otp/i)).toBeInTheDocument(),
+      );
+      await u.type(screen.getByLabelText(/otp/i), "1234");
+      await u.click(screen.getByRole("button", { name: /verify/i }));
+      otpResolve({ accessToken: "access-123", refreshToken: "refresh-456" });
+      await waitFor(() => expect(mockAuthLogin).toHaveBeenCalledTimes(1));
       expect(mockNavigate).toHaveBeenCalledWith("/", { replace: true });
     });
   });

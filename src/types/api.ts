@@ -42,6 +42,11 @@ export interface LoginResponse {
   refreshToken: string;
 }
 
+export interface LoginStep1Response {
+  requiresOtp: true;
+  message: string;
+}
+
 // ─── Dashboard ──────────────────────────────────────────────────────
 
 export interface PlatformOverview {
